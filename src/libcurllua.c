@@ -52,6 +52,43 @@ static int l_curl_easy_setopt_url(lua_State *L) {
 	return 1;
 }
 
+static int l_curl_easy_setopt_verbose(lua_State *L) {
+	
+	CURL *curl = (CURL *)lua_touserdata(L, -2);
+	int onoff = lua_toboolean(L, -1);
+		
+	CURLcode code =	curl_easy_setopt(curl, CURLOPT_VERBOSE, onoff);
+
+	lua_pushinteger(L, code);
+
+	return 1;
+}
+
+static int l_curl_easy_setopt_capath(lua_State *L) {
+	
+	CURL *curl = (CURL *)lua_touserdata(L, -2);
+	const char *path = lua_tostring(L, -1);
+		
+	CURLcode code =	curl_easy_setopt(curl, CURLOPT_CAPATH, path);
+
+	lua_pushinteger(L, code);
+
+	return 1;
+}
+
+static int l_curl_easy_setopt_cainfo(lua_State *L) {
+	
+	CURL *curl = (CURL *)lua_touserdata(L, -2);
+	const char *path = lua_tostring(L, -1);
+		
+	CURLcode code =	curl_easy_setopt(curl, CURLOPT_CAINFO, path);
+
+	lua_pushinteger(L, code);
+
+	return 1;
+}
+
+
 /*
 	Registration phase starts
 */
@@ -60,11 +97,14 @@ static const struct luaL_Reg libcurl [] = {
 	{"curl_easy_init", l_curl_easy_init},
 	{"curl_easy_cleanup", l_curl_easy_cleanup},
 	{"curl_easy_setopt_url", l_curl_easy_setopt_url},
+	{"curl_easy_setopt_verbose", l_curl_easy_setopt_verbose},
+	{"curl_easy_setopt_capath", l_curl_easy_setopt_capath},
+	{"curl_easy_setopt_cainfo", l_curl_easy_setopt_cainfo},
 	{"curl_easy_perform", l_curl_easy_perform},
 	{NULL, NULL} /* sentinel */
 };
  
-int luaopen_libcurl (lua_State *L) {
+int luaopen_libcurllua (lua_State *L) {
 	luaL_newlib(L, libcurl);
 	return 1;
 }

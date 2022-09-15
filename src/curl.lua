@@ -1,5 +1,5 @@
 
-local libcurl = require 'libcurl'
+local libcurl = require 'libcurllua'
 
 local curl = {}
 
