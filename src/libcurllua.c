@@ -88,6 +88,41 @@ static int l_curl_easy_setopt_cainfo(lua_State *L) {
 	return 1;
 }
 
+static int l_curl_easy_setopt_username(lua_State *L) {
+	
+	CURL *curl = (CURL *)lua_touserdata(L, -2);
+	const char *username = lua_tostring(L, -1);
+		
+	CURLcode code =	curl_easy_setopt(curl, CURLOPT_USERNAME, username);
+
+	lua_pushinteger(L, code);
+
+	return 1;
+}
+
+static int l_curl_easy_setopt_password(lua_State *L) {
+	
+	CURL *curl = (CURL *)lua_touserdata(L, -2);
+	const char *passwd = lua_tostring(L, -1);
+		
+	CURLcode code =	curl_easy_setopt(curl, CURLOPT_PASSWORD, passwd);
+
+	lua_pushinteger(L, code);
+
+	return 1;
+}
+
+static int l_curl_easy_setopt_httpheader(lua_State *L) {
+	
+	CURL *curl = (CURL *)lua_touserdata(L, -2);
+	struct curl_slist *list = (struct curl_slist *)lua_touserdata(L, -1);
+
+	CURLcode code =	curl_easy_setopt(curl, CURLOPT_HTTPHEADER, list);
+
+	lua_pushinteger(L, code);
+
+	return 1;
+}
 
 /*
 	Registration phase starts
@@ -100,6 +135,9 @@ static const struct luaL_Reg libcurl [] = {
 	{"curl_easy_setopt_verbose", l_curl_easy_setopt_verbose},
 	{"curl_easy_setopt_capath", l_curl_easy_setopt_capath},
 	{"curl_easy_setopt_cainfo", l_curl_easy_setopt_cainfo},
+	{"curl_easy_setopt_username", l_curl_easy_setopt_username},
+	{"curl_easy_setopt_password", l_curl_easy_setopt_password},
+	{"curl_easy_setopt_httpheader", l_curl_easy_setopt_httpheader},
 	{"curl_easy_perform", l_curl_easy_perform},
 	{NULL, NULL} /* sentinel */
 };
