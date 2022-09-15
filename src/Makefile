@@ -8,4 +8,5 @@ mingw:
 	gcc -O2 -std=gnu99 -fPIC -Wall -g -I/usr/local/include/ -I/usr/include/ -s -shared -o \
 		libcurllua.dll libcurllua.c -L/d/snapshots/curl-7.85.0_1-win64-mingw/lib/ -lcurl -L/usr/local/lib/ -llua54
 	mv libcurllua.dll /usr/local/lib/lua/5.4/
+	cp curl.lua /usr/local/share/lua/5.4/
 

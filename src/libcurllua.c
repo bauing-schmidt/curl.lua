@@ -124,6 +124,28 @@ static int l_curl_easy_setopt_httpheader(lua_State *L) {
 	return 1;
 }
 
+static int l_curl_slist_append(lua_State *L) {
+	
+	struct curl_slist *list = (struct curl_slist *)lua_touserdata(L, -2);
+	const char *header = lua_tostring(L, -1);
+
+	list = curl_slist_append(list, header);
+
+	lua_pushlightuserdata (L, (void *)list);
+
+	return 1;
+}
+
+static int l_curl_slist_free_all(lua_State *L) {
+	
+	struct curl_slist *list = (struct curl_slist *)lua_touserdata(L, -1);
+
+	curl_slist_free_all(list);
+
+	return 0;
+}
+
+
 /*
 	Registration phase starts
 */
@@ -139,6 +161,8 @@ static const struct luaL_Reg libcurl [] = {
 	{"curl_easy_setopt_password", l_curl_easy_setopt_password},
 	{"curl_easy_setopt_httpheader", l_curl_easy_setopt_httpheader},
 	{"curl_easy_perform", l_curl_easy_perform},
+	{"curl_slist_append", l_curl_slist_append},
+	{"curl_slist_free_all", l_curl_slist_free_all},
 	{NULL, NULL} /* sentinel */
 };
  
