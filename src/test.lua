@@ -1,21 +1,23 @@
 
 
-local libcurllua = require 'libcurllua'
+local curl = require 'curl'
 
-local code
+local function G (cu)
 
-local cu = libcurllua.curl_easy_init()
+	local code
 
-code = libcurllua.curl_easy_setopt_url(cu, 'https://www.google.com')
-assert(code == 0)
+	code = curl.curl_easy_setopt_url(cu, 'https://www.google.com')
+	assert(code == 0)
 
-code = libcurllua.curl_easy_setopt_verbose(cu, true)
-assert(code == 0)
+	code = curl.curl_easy_setopt_verbose(cu, true)
+	assert(code == 0)
 
-code = libcurllua.curl_easy_setopt_cainfo(cu, 'curl-ca-bundle.crt')
-assert(code == 0)
+	code = curl.curl_easy_setopt_cainfo(cu, 'curl-ca-bundle.crt')
+	assert(code == 0)
 
-code = libcurllua.curl_easy_perform(cu)
-assert(code == 0)
+	code = curl.curl_easy_perform(cu)
+	assert(code == 0)
 
-libcurllua.curl_easy_cleanup(cu)
+end
+
+curl.with_easy_handle_do(G)

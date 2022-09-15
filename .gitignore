@@ -1,2 +1,2 @@
 
-src/libcurl.so
+src/*.so
