@@ -175,6 +175,20 @@ static size_t cb(void *data, size_t size, size_t nmemb, void *userp)
   return realsize;
 }
 
+static size_t cb1(void *data, size_t size, size_t nmemb, void *userp)
+{
+	size_t realsize = cb(data, size, nmemb, userp);
+
+	struct memory *mem = (struct memory *)userp;
+
+	lua_pushvalue(mem->L, -1);
+	lua_pushstring(mem->L, mem->response);
+	lua_pushinteger(mem->L, realsize);
+	lua_call(mem->L, 2, 0);
+
+	return realsize;
+}
+
 static int l_curl_easy_setopt_writefunction(lua_State *L) {
 	
 	CURL *curl = (CURL *)lua_touserdata(L, -2);
@@ -203,6 +217,31 @@ static int l_curl_easy_setopt_writedata(lua_State *L) {
 	return 2;
 }
 
+static int l_curl_easy_setopt_writefunction1(lua_State *L) {
+	
+	CURL *curl = (CURL *)lua_touserdata(L, -2); 	// the second argument is the callback function
+	lua_State *S = lua_newthread (L); // such a new thread is pushed on L also.
+	lua_pushvalue(L, -2);	// duplicate the given function
+	lua_xmove(L, S, 1);
+
+	CURLcode code =	curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, cb1);
+
+	struct memory *mem = (struct memory *) malloc( sizeof( struct memory ));
+	mem->L = S;
+	mem->response = NULL;
+	mem->size = 0;
+	
+	code = curl_easy_setopt(curl, CURLOPT_WRITEDATA,  mem);
+	assert(code == 0);
+	
+	lua_pushinteger(L, code);
+	lua_pushvalue(L, -2);	// duplicate the given thread
+	lua_remove(L, -3);	// cleanup
+	lua_pushlightuserdata(L, mem);
+
+	return 3;
+}
+
 static int l_curl_easy_getopt_writedata(lua_State *L) {
 	
 	struct memory *mem = (struct memory *)lua_touserdata(L, -1);
@@ -214,6 +253,21 @@ static int l_libc_free(lua_State *L) {
 	void *p = lua_touserdata(L, -1);
 	free(p);
 	return 0;
+}
+
+static int l_test(lua_State *L) {
+	lua_State *S = lua_newthread (L); // such a new thread is pushed on L also.
+	lua_Integer i = lua_tointeger(L, -2);
+	lua_pushinteger(S, i);
+	assert(lua_tointeger(S, -1) == 42);
+	return 1;
+}
+
+static int l_test_func(lua_State *L) {
+	lua_State *S = lua_newthread (L); // such a new thread is pushed on L also.
+	lua_pushvalue(L, -2);	// duplicate the given function
+	lua_xmove(L, S, 1);
+	return 1; // the thread actually
 }
 
 /*
@@ -231,12 +285,15 @@ static const struct luaL_Reg libcurl [] = {
 	{"curl_easy_setopt_password", l_curl_easy_setopt_password},
 	{"curl_easy_setopt_httpheader", l_curl_easy_setopt_httpheader},
 	{"curl_easy_setopt_writefunction", l_curl_easy_setopt_writefunction},
+	{"curl_easy_setopt_writefunction1", l_curl_easy_setopt_writefunction1},
 	{"curl_easy_setopt_writedata", l_curl_easy_setopt_writedata},
 	{"curl_easy_getopt_writedata", l_curl_easy_getopt_writedata},
 	{"curl_easy_perform", l_curl_easy_perform},
 	{"curl_slist_append", l_curl_slist_append},
 	{"curl_slist_free_all", l_curl_slist_free_all},
 	{"libc_free", l_libc_free},
+	{"test", l_test},
+	{"test_func", l_test_func},
 	{NULL, NULL} /* sentinel */
 };
  

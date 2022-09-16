@@ -75,8 +75,50 @@ local function apptivegrid (cu)
 
 end
 
+local function apptivegrid1 (cu)
+
+	curl.with_http_header_do({ 
+			Accept = 'application/vnd.apptivegrid.hal;version=2' 
+		},
+		function (headers) 
+			
+			curl.curl_easy_setopt {
+				url = 'https://app.apptivegrid.de/api/users/6315f0a9f5ca3bb794a42cb3/spaces/6315f0b667d3ac2664a44f52/grids/631ee7590cb7e1473fa4c5ee',
+				verbose = true,
+				cainfo = 'curl-ca-bundle.crt',
+				username = 'c50898f167bbe225b0a1323e9b521ebb',
+				password = '7pwzdl44ncldskvh6mdo9zj8b',
+				httpheader = headers,
+			} (cu)
+
+			local a = 'hello'
+			code, thread, memory = curl.curl_easy_setopt_writefunction1(cu, 
+				function (data, size) print(size) end)
+			assert(code == 0)
+
+			code = curl.curl_easy_perform(cu)
+			assert(code == 0)
+
+			local response = curl.curl_easy_getopt_writedata(memory)
+			curl.libc_free(memory)
+			
+			print('\n'..response)
+		end)
+
+end
+
 --------------------------------------------------------------------------------
 
 --curl.with_easy_handle_do(G)
 --curl.with_easy_handle_do(apptivegrid_plain)
-curl.with_easy_handle_do(apptivegrid)
+--curl.with_easy_handle_do(apptivegrid)
+curl.with_easy_handle_do(apptivegrid1)
+
+print()
+
+local S = curl.test(42)
+print(type(S))
+
+local a = 42
+local S = curl.test_func(function (b) return a + b end)
+print(type(S))
