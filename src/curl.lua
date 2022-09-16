@@ -26,7 +26,7 @@ function curl.with_http_header_do(tbl, recv)
 
 end
 
-function curl.curl_setopt(tbl)
+function curl.curl_easy_setopt(tbl)
 
 	return function (cu)
 		

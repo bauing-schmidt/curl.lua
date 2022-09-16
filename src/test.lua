@@ -25,15 +25,17 @@ local function apptivegrid (cu)
 	curl.with_http_header_do({ 
 			Accept = 'application/vnd.apptivegrid.hal;version=2' 
 		},
-		function(headers) 
+		function (headers) 
 			
-			curl.curl_setopt {
+			curl.curl_easy_setopt {
 				url = 'https://app.apptivegrid.de/api/users/6315f0a9f5ca3bb794a42cb3/spaces/6315f0b667d3ac2664a44f52/grids/631ee7590cb7e1473fa4c5ee',
 				verbose = true,
 				cainfo = 'curl-ca-bundle.crt',
 				username = 'c50898f167bbe225b0a1323e9b521ebb',
 				password = '7pwzdl44ncldskvh6mdo9zj8b',
 				httpheader = headers,
+				writefunction = 3,
+				writedata = 3,
 			} (cu)
 			
 			code = curl.curl_easy_perform(cu)
