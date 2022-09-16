@@ -1,5 +1,4 @@
 
-
 local curl = require 'curl'
 
 local function G (cu)
@@ -35,11 +34,18 @@ local function apptivegrid (cu)
 				password = '7pwzdl44ncldskvh6mdo9zj8b',
 				httpheader = headers,
 				writefunction = 3,
-				writedata = 3,
 			} (cu)
-			
+
+			code, memory = curl.curl_easy_setopt_writedata(cu, nil)
+			assert(code == 0)
+
 			code = curl.curl_easy_perform(cu)
 			assert(code == 0)
+
+			local response = curl.curl_easy_getopt_writedata(memory)
+			curl.libc_free(memory)
+			
+			print('\n'..response)
 		end)
 
 end
