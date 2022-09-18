@@ -181,10 +181,12 @@ static size_t cb1(void *data, size_t size, size_t nmemb, void *userp)
 
 	struct memory *mem = (struct memory *)userp;
 
+	lua_State *L = (lua_State *) lua_touserdata(mem->L, -2);
 	lua_pushvalue(mem->L, -1);
-	lua_pushstring(mem->L, mem->response);
-	lua_pushinteger(mem->L, realsize);
-	lua_call(mem->L, 2, 0);
+	lua_xmove(mem->L, L, 1);
+	lua_pushstring(L, mem->response);
+	lua_pushinteger(L, realsize);
+	lua_call(L, 2, 0);
 
 	return realsize;
 }
@@ -221,6 +223,7 @@ static int l_curl_easy_setopt_writefunction1(lua_State *L) {
 	
 	CURL *curl = (CURL *)lua_touserdata(L, -2); 	// the second argument is the callback function
 	lua_State *S = lua_newthread (L); // such a new thread is pushed on L also.
+	lua_pushlightuserdata(S, (void *) L); // put the current state itself
 	lua_pushvalue(L, -2);	// duplicate the given function
 	lua_xmove(L, S, 1);
 

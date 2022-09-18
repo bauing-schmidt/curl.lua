@@ -91,9 +91,19 @@ local function apptivegrid1 (cu)
 				httpheader = headers,
 			} (cu)
 
-			local a = 'hello'
-			code, thread, memory = curl.curl_easy_setopt_writefunction1(cu, 
-				function (data, size) print(size) end)
+			local c = 0
+			local amount = 0
+			
+			local function logger (data, size) 
+				print(tostring(c) .. 
+				      ': received ' .. 
+				      tostring(size) .. 
+				      ' bytes more')
+				c = c + 1
+				amount = amount + size
+			end
+			
+			code, thread, memory = curl.curl_easy_setopt_writefunction1(cu, logger)
 			assert(code == 0)
 
 			code = curl.curl_easy_perform(cu)
@@ -102,7 +112,8 @@ local function apptivegrid1 (cu)
 			local response = curl.curl_easy_getopt_writedata(memory)
 			curl.libc_free(memory)
 			
-			print('\n'..response)
+			assert(#response == amount)	-- cumulated size has to equal the actual size.
+			--print('\n'..response)
 		end)
 
 end
