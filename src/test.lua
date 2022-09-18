@@ -94,7 +94,9 @@ local function apptivegrid1 (cu)
 			local c = 0
 			local amount = 0
 			
-			local function logger (data, size) 
+			local function logger (data, size)
+				-- this function is interesting because catches some outer vars.
+				
 				print(tostring(c) .. 
 				      ': received ' .. 
 				      tostring(size) .. 
@@ -103,7 +105,7 @@ local function apptivegrid1 (cu)
 				amount = amount + size
 			end
 			
-			code, thread, memory = curl.curl_easy_setopt_writefunction1(cu, logger)
+			local code, thread, memory = curl.curl_easy_setopt_writefunction1(cu, logger)
 			assert(code == 0)
 
 			code = curl.curl_easy_perform(cu)
@@ -111,6 +113,8 @@ local function apptivegrid1 (cu)
 
 			local response = curl.curl_easy_getopt_writedata(memory)
 			curl.libc_free(memory)
+			
+			thread = nil	-- allows the GC to reclaim the working thread.
 			
 			assert(#response == amount)	-- cumulated size has to equal the actual size.
 			--print('\n'..response)
