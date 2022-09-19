@@ -135,6 +135,8 @@ local function apptivegrid_upload (cu, entity_json)
 			code = curl.curl_easy_perform(cu)
 			assert(code == 0)
 
+			local response_code = curl.curl_easy_getinfo_response_code(cu)
+			assert(response_code == 201)
 		end)
 end
 

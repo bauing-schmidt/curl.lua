@@ -300,6 +300,20 @@ static int l_curl_easy_getopt_writedata(lua_State *L) {
 	return 1;
 }
 
+
+static int l_curl_easy_getinfo_response_code(lua_State *L) {
+	
+	CURL *curl = (CURL *)lua_touserdata(L, -1);
+	
+	long response_code;
+	CURLcode code = curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &response_code);
+	
+	lua_pushinteger(L, code);
+	lua_pushinteger(L, response_code);
+
+	return 2;
+}
+
 static int l_libc_free(lua_State *L) {
 	void *p = lua_touserdata(L, -1);
 	free(p);
@@ -342,6 +356,7 @@ static const struct luaL_Reg libcurl [] = {
 	{"curl_easy_setopt_writefunction", l_curl_easy_setopt_writefunction},
 	{"curl_easy_setopt_writefunction1", l_curl_easy_setopt_writefunction1},
 	{"curl_easy_setopt_writedata", l_curl_easy_setopt_writedata},
+	{"curl_easy_getinfo_response_code", l_curl_easy_getinfo_response_code},
 	{"curl_easy_getopt_writedata", l_curl_easy_getopt_writedata},
 	{"curl_easy_perform", l_curl_easy_perform},
 	{"curl_slist_append", l_curl_slist_append},
