@@ -4,6 +4,14 @@ local libcurl = require 'libcurllua'
 local curl = {}
 setmetatable(curl, {__index = libcurl})
 
+
+-- NETRC options
+curl.opt_netrc = {
+	CURL_NETRC_IGNORED = 0,
+	CURL_NETRC_OPTIONAL = 1,
+	CURL_NETRC_REQUIRED = 2,
+}
+
 function curl.with_easy_handle_do(handler)
 	local cu = libcurl.curl_easy_init()
 	local res = pcall(handler, cu)

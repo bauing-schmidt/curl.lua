@@ -55,6 +55,42 @@ static int l_curl_easy_setopt_url(lua_State *L) {
 	return 1;
 }
 
+static int l_curl_easy_setopt_header(lua_State *L) {
+	
+	CURL *curl = (CURL *)lua_touserdata(L, -2);
+	int onoff = lua_toboolean(L, -1);
+		
+	CURLcode code =	curl_easy_setopt(curl, CURLOPT_HEADER, onoff);
+
+	lua_pushinteger(L, code);
+
+	return 1;
+}
+
+static int l_curl_easy_setopt_netrc(lua_State *L) {
+	
+	CURL *curl = (CURL *)lua_touserdata(L, -2);
+	lua_Integer level = lua_tointeger(L, -1);
+
+	CURLcode code =	curl_easy_setopt(curl, CURLOPT_NETRC, level);
+
+	lua_pushinteger(L, code);
+
+	return 1;
+}
+
+static int l_curl_easy_setopt_post(lua_State *L) {
+	
+	CURL *curl = (CURL *)lua_touserdata(L, -2);
+	int post = lua_toboolean(L, -1);
+
+	CURLcode code =	curl_easy_setopt(curl, CURLOPT_POST, post);
+
+	lua_pushinteger(L, code);
+
+	return 1;
+}
+
 static int l_curl_easy_setopt_verbose(lua_State *L) {
 	
 	CURL *curl = (CURL *)lua_touserdata(L, -2);
@@ -109,6 +145,18 @@ static int l_curl_easy_setopt_password(lua_State *L) {
 	const char *passwd = lua_tostring(L, -1);
 		
 	CURLcode code =	curl_easy_setopt(curl, CURLOPT_PASSWORD, passwd);
+
+	lua_pushinteger(L, code);
+
+	return 1;
+}
+
+static int l_curl_easy_setopt_postfields(lua_State *L) {
+	
+	CURL *curl = (CURL *)lua_touserdata(L, -2);
+	const char *fields = lua_tostring(L, -1);
+		
+	CURLcode code =	curl_easy_setopt(curl, CURLOPT_POSTFIELDS, fields);
 
 	lua_pushinteger(L, code);
 
@@ -281,11 +329,15 @@ static const struct luaL_Reg libcurl [] = {
 	{"curl_easy_init", l_curl_easy_init},
 	{"curl_easy_cleanup", l_curl_easy_cleanup},
 	{"curl_easy_setopt_url", l_curl_easy_setopt_url},
+	{"curl_easy_setopt_header", l_curl_easy_setopt_header},
+	{"curl_easy_setopt_netrc", l_curl_easy_setopt_netrc},
+	{"curl_easy_setopt_post", l_curl_easy_setopt_post},
 	{"curl_easy_setopt_verbose", l_curl_easy_setopt_verbose},
 	{"curl_easy_setopt_capath", l_curl_easy_setopt_capath},
 	{"curl_easy_setopt_cainfo", l_curl_easy_setopt_cainfo},
 	{"curl_easy_setopt_username", l_curl_easy_setopt_username},
 	{"curl_easy_setopt_password", l_curl_easy_setopt_password},
+	{"curl_easy_setopt_postfields", l_curl_easy_setopt_postfields},
 	{"curl_easy_setopt_httpheader", l_curl_easy_setopt_httpheader},
 	{"curl_easy_setopt_writefunction", l_curl_easy_setopt_writefunction},
 	{"curl_easy_setopt_writefunction1", l_curl_easy_setopt_writefunction1},
