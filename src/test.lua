@@ -6,16 +6,16 @@ local function G (cu)
 	local code
 
 	code = curl.curl_easy_setopt_url(cu, 'https://www.google.com')
-	assert(code == 0)
+	assert(code == curl.CURLcode.CURLE_OK)
 
 	code = curl.curl_easy_setopt_verbose(cu, true)
-	assert(code == 0)
+	assert(code == curl.CURLcode.CURLE_OK)
 
 	code = curl.curl_easy_setopt_cainfo(cu, 'curl-ca-bundle.crt')
-	assert(code == 0)
+	assert(code == curl.CURLcode.CURLE_OK)
 
 	code = curl.curl_easy_perform(cu)
-	assert(code == 0)
+	assert(code == curl.CURLcode.CURLE_OK)
 
 end
 
@@ -35,7 +35,7 @@ local function apptivegrid_plain (cu)
 			})
 
 			code = curl.curl_easy_perform(cu)
-			assert(code == 0)
+			assert(code == curl.CURLcode.CURLE_OK)
 
 		end)
 
@@ -57,10 +57,10 @@ local function apptivegrid (cu)
 			})
 
 			local code, memory = curl.curl_easy_setopt_writefunction(cu, nil)
-			assert(code == 0)
+			assert(code == curl.CURLcode.CURLE_OK)
 
 			code = curl.curl_easy_perform(cu)
-			assert(code == 0)
+			assert(code == curl.CURLcode.CURLE_OK)
 
 			local response = curl.curl_easy_getopt_writedata(memory)
 			curl.libc_free(memory)
@@ -96,10 +96,10 @@ local function apptivegrid1 (cu)
 	})
 
 	local code, memory, thread = returns.writefunction()
-	assert(code == 0)
+	assert(code == curl.CURLcode.CURLE_OK)
 
 	code = curl.curl_easy_perform(cu) -- go!
-	assert(code == 0)
+	assert(code == curl.CURLcode.CURLE_OK)
 
 	local response, size = curl.curl_easy_getopt_writedata(memory)
 	
@@ -141,7 +141,7 @@ local function apptivegrid2 (cu)
 	} (cu)
 
 	local code, response, size = returns.writefunction()
-	assert(code == 0)
+	assert(code == curl.CURLcode.CURLE_OK)
 	assert(#response == amount and amount == size)	-- cumulated size has to equal the actual size.
 	print('\n'..response)
 
@@ -164,7 +164,7 @@ local function apptivegrid_upload (cu, entity_json)
 			})
 
 			local code = curl.curl_easy_perform(cu)
-			assert(code == 0)
+			assert(code == curl.CURLcode.CURLE_OK)
 
 			local code, response_code = curl.curl_easy_getinfo_response_code(cu)
 			assert(response_code == 201)
@@ -191,7 +191,7 @@ local function apptivegrid_upload_1 (cu, entity_json)
 	} (cu)
 	
 	local code, response_code = getinfos.response_code()
-	assert(code == 0)
+	assert(code == curl.CURLcode.CURLE_OK)
 	assert(response_code == 201)
 end
 
@@ -213,12 +213,12 @@ local function aws (cu)
 			verbose = true,
 			header = false,
 			cainfo = 'curl-ca-bundle.crt',
-			writefunction = true,
+			writefunction = true,	-- means that we just want the whole response, not interested in its chunks.
 		}
 	} (cu)
 
 	local code, response, size = returns.writefunction()
-	assert(code == 0)
+	assert(code == curl.CURLcode.CURLE_OK)
 	
 	local urls = {}
 	for k in string.gmatch(response, '"uploadURL":"([%w%p]+)"') do
@@ -246,6 +246,7 @@ local entity_json = [[
 
 ]]
 
+print('cURL version: ' .. curl.curl_version() .. '\n')
 --------------------------------------------------------------------------------
 
 --curl.curl_easy_do(G)

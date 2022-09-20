@@ -175,6 +175,27 @@ static int l_curl_easy_setopt_httpheader(lua_State *L) {
 	return 1;
 }
 
+
+static int l_curl_easy_reset(lua_State *L) {
+	
+	CURL *curl = (CURL *)lua_touserdata(L, -1);
+	
+	curl_easy_reset(curl);
+
+	return 0;
+}
+
+static int l_curl_easy_duphandle(lua_State *L) {
+	
+	CURL *curl = (CURL *)lua_touserdata(L, -1);
+	
+	CURL *dup = curl_easy_duphandle(curl);
+
+	lua_pushlightuserdata(L, dup);
+
+	return 1;
+}
+
 static int l_curl_slist_append(lua_State *L) {
 	
 	struct curl_slist *list = (struct curl_slist *)lua_touserdata(L, -2);
@@ -302,6 +323,15 @@ static int l_curl_easy_getinfo_response_code(lua_State *L) {
 	return 2;
 }
 
+static int l_curl_version(lua_State *L) {
+	
+	char *version =	curl_version();
+
+	lua_pushstring(L, version);
+
+	return 1;
+}
+
 static int l_libc_free(lua_State *L) {
 	void *p = lua_touserdata(L, -1);
 	free(p);
@@ -330,6 +360,8 @@ static int l_test_func(lua_State *L) {
 static const struct luaL_Reg libcurl [] = {
 	{"curl_easy_init", l_curl_easy_init},
 	{"curl_easy_cleanup", l_curl_easy_cleanup},
+	{"curl_easy_reset", l_curl_easy_reset},
+	{"curl_easy_duphandle", l_curl_easy_duphandle},
 	{"curl_easy_setopt_url", l_curl_easy_setopt_url},
 	{"curl_easy_setopt_header", l_curl_easy_setopt_header},
 	{"curl_easy_setopt_netrc", l_curl_easy_setopt_netrc},
@@ -347,6 +379,7 @@ static const struct luaL_Reg libcurl [] = {
 	{"curl_easy_perform", l_curl_easy_perform},
 	{"curl_slist_append", l_curl_slist_append},
 	{"curl_slist_free_all", l_curl_slist_free_all},
+	{"curl_version", l_curl_version},
 	{"libc_free", l_libc_free},
 	{"test", l_test},
 	{"test_func", l_test_func},
