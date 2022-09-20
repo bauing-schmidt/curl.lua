@@ -54,8 +54,6 @@ function curl.curl_easy_setopt(cu, tbl)
 		local setopt_k = curl['curl_easy_setopt_' .. k]
 		if type(setopt_k) == 'function' then
 			local r = table.pack(setopt_k(cu, v))
-			local code = r[1]
-			assert(code == 0)
 			returns[k] = function () return table.unpack(r) end
 		end
 	end
@@ -64,21 +62,34 @@ function curl.curl_easy_setopt(cu, tbl)
 	
 end
 
-function curl.curl_easy(options)
+function curl.curl_easy_getinfo(cu, tbl)
 
-	curl.with_easy_handle_do(function (cu)
-		
-	end)
+	local getinfos = {}
+			
+	for _, k in ipairs(tbl) do
+		local getinfo_k = curl['curl_easy_getinfo_' .. k]
+		if type(getinfo_k) == 'function' then
+			local r = table.pack(getinfo_k(cu))
+			getinfos[k] = function () return table.unpack(r) end
+		end
+	end
+	
+	return getinfos
 	
 end
 
-function curl.curl_easy_httpheader_setopt (tbl)
+function curl.curl_easy_httpheader_setopt_getinfo (tbl)
 
-	local headers_tbl, setopt_tbl = tbl.httpheader, tbl.setopt
+	local headers_tbl, setopt_tbl, getinfo_tbl = tbl.httpheader, tbl.setopt, tbl.getinfo
+	
+	if not headers_tbl then	headers_tbl = {} end
+	
+	if not getinfo_tbl then	getinfo_tbl = {} end
 
 	return function (cu)
 
 		local headers = curl.curl_slist(headers_tbl)
+		setopt_tbl.httpheader = headers	-- override anything already present for the headers.
 				
 		local returns = curl.curl_easy_setopt(cu, setopt_tbl)
 
@@ -106,7 +117,9 @@ function curl.curl_easy_httpheader_setopt (tbl)
 			returns.writefunction = function () return code, response, size end
 		end
 		
-		return returns
+		local getinfos = curl.curl_easy_getinfo(cu, getinfo_tbl)
+		
+		return returns, getinfos
 	end
 end
 

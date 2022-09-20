@@ -126,7 +126,7 @@ local function apptivegrid2 (cu)
 		amount = amount + size
 	end
 
-	local returns = curl.curl_easy_httpheader_setopt {
+	local returns = curl.curl_easy_httpheader_setopt_getinfo {
 		httpheader	= { 
 			Accept = 'application/vnd.apptivegrid.hal;version=2' 
 		},
@@ -135,7 +135,6 @@ local function apptivegrid2 (cu)
 			verbose = true,
 			header = false,
 			cainfo = 'curl-ca-bundle.crt',
-			httpheader = headers,
 			netrc = curl.opt_netrc.CURL_NETRC_OPTIONAL,
 			writefunction = logger,
 		}
@@ -158,18 +157,42 @@ local function apptivegrid_upload (cu, entity_json)
 				url = 'https://app.apptivegrid.de/api/users/6315f0a9f5ca3bb794a42cb3/spaces/6315f0b667d3ac2664a44f52/grids/631ee7590cb7e1473fa4c5ee/entities?layout=property',
 				verbose = true,
 				header = false,
+				httpheader = headers,
 				postfields = entity_json,
 				cainfo = 'curl-ca-bundle.crt',
-				httpheader = headers,
 				netrc = curl.opt_netrc.CURL_NETRC_OPTIONAL,
 			})
 
-			code = curl.curl_easy_perform(cu)
+			local code = curl.curl_easy_perform(cu)
 			assert(code == 0)
 
-			local response_code = curl.curl_easy_getinfo_response_code(cu)
+			local code, response_code = curl.curl_easy_getinfo_response_code(cu)
 			assert(response_code == 201)
 		end)
+end
+
+local function apptivegrid_upload_1 (cu, entity_json)
+		
+	local returns, getinfos = curl.curl_easy_httpheader_setopt_getinfo {
+		httpheader	= { 
+			['Content-Type'] = 'application/json',
+		},
+		setopt		= {	
+			url = 'https://app.apptivegrid.de/api/users/6315f0a9f5ca3bb794a42cb3/spaces/6315f0b667d3ac2664a44f52/grids/631ee7590cb7e1473fa4c5ee/entities?layout=property',
+			verbose = true,
+			header = false,
+			postfields = entity_json,
+			cainfo = 'curl-ca-bundle.crt',
+			netrc = curl.opt_netrc.CURL_NETRC_OPTIONAL,
+		},
+		getinfo 	= { 
+			'response_code' 
+		}
+	} (cu)
+	
+	local code, response_code = getinfos.response_code()
+	assert(code == 0)
+	assert(response_code == 201)
 end
 
 local entity_json = [[
@@ -193,8 +216,9 @@ local entity_json = [[
 --curl.curl_easy_do(apptivegrid_plain)
 --curl.curl_easy_do(apptivegrid)
 --curl.curl_easy_do(apptivegrid1)
-curl.curl_easy_do(apptivegrid2)
+--curl.curl_easy_do(apptivegrid2)
 --curl.curl_easy_do(function (cu) apptivegrid_upload(cu, entity_json) end)
+curl.curl_easy_do(function (cu) apptivegrid_upload_1(cu, entity_json) end)
 
 --[[
 do a GET request at https://7zzn3khlt1.execute-api.eu-central-1.amazonaws.com/uploads with two post arguments:
