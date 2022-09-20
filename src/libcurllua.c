@@ -270,15 +270,14 @@ static int l_curl_easy_setopt_writefunction(lua_State *L) {
 	lua_pushinteger(L, code);
 	lua_pushlightuserdata(L, mem);
 	
-	int nargs = 2;
-	
 	if (S != NULL) {
 		lua_pushvalue(L, -3);	// duplicate the working thread
 		lua_remove(L, -4);	// cleanup a doubled value
-		nargs++;
+	} else {
+		lua_pushnil(L);
 	}
 
-	return nargs;
+	return 3;
 }
 
 static int l_curl_easy_getopt_writedata(lua_State *L) {

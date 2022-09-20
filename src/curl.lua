@@ -82,9 +82,9 @@ function curl.curl_easy_httpheader_setopt_getinfo (tbl)
 
 	local headers_tbl, setopt_tbl, getinfo_tbl = tbl.httpheader, tbl.setopt, tbl.getinfo
 	
-	if not headers_tbl then	headers_tbl = {} end
-	if not setopt_tbl  then	setopt_tbl  = {} end
-	if not getinfo_tbl then	getinfo_tbl = {} end
+	headers_tbl = headers_tbl or {}
+	setopt_tbl = setopt_tbl or {}
+	getinfo_tbl = getinfo_tbl or {}
 
 	return function (cu)
 
