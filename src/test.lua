@@ -195,7 +195,7 @@ local function apptivegrid_upload_1 (cu, entity_json)
 	assert(response_code == 201)
 end
 
-local function aws (cu)
+local function aws_geturl (cu)
 	
 	--[[
 	do a GET request at https://7zzn3khlt1.execute-api.eu-central-1.amazonaws.com/uploads with two post arguments:
@@ -204,7 +204,7 @@ local function aws (cu)
 	do a PUT request at `v` and then a GET to get back the file.
 	]]--
 
-	local returns = curl.curl_easy_httpheader_setopt_getinfo {
+	local returns, getinfos = curl.curl_easy_httpheader_setopt_getinfo {
 		httpheader	= { 
 			['Content-Type'] = 'application/json',
 		},
@@ -217,6 +217,9 @@ local function aws (cu)
 		}
 	} (cu)
 
+	-- just a check of the encoded URL.
+	--print(curl.curl_easy_escape(cu, 'https://7zzn3khlt1.execute-api.eu-central-1.amazonaws.com/uploads?fileName=test.txt&fileType=application/octet-stream'))
+
 	local code, response, size = returns.writefunction()
 	assert(code == curl.CURLcode.CURLE_OK)
 	
@@ -226,9 +229,63 @@ local function aws (cu)
      	end
      	local i = string.find(urls[1], '"', 1, true)
      	local url = string.sub(urls[1], 1, i - 1)
-     	print(url)
+
+	return url
+
+end
+
+local function aws_puturl (url, payload)
+
+	return function (cu)
 	
+		returns, getinfos = curl.curl_easy_httpheader_setopt_getinfo {
+			httpheader	= { 
+				['Content-Type'] = 'text/plain',
+			},
+			setopt		= {	
+				url = url,	-- use here the URL received in the previous call.
+				verbose = true,
+				header = false,
+				postfields = payload,
+				cainfo = 'curl-ca-bundle.crt',
+				netrc = curl.opt_netrc.CURL_NETRC_OPTIONAL,
+			},
+			getinfo 	= { 
+				'response_code' 
+			}
+		} (cu)
+		
+		local code, response_code = getinfos.response_code()
+		assert(code == curl.CURLcode.CURLE_OK)
+		--assert(response_code == 201)
+		print(response_code)
+
+	end	
+end
+
+local function aws_get (url) 
+
+	return function (cu)
 	
+		local returns, getinfos = curl.curl_easy_httpheader_setopt_getinfo {
+			httpheader	= { 
+				['Content-Type'] = 'text/plain',
+			},
+			setopt		= {	
+				url = url,
+				verbose = true,
+				header = false,
+				cainfo = 'curl-ca-bundle.crt',
+				writefunction = true,
+			}
+		} (cu)
+
+		local code, response, size = returns.writefunction()
+		assert(code == curl.CURLcode.CURLE_OK)
+		
+		return response
+
+	end
 end
 
 local entity_json = [[
@@ -246,6 +303,7 @@ local entity_json = [[
 
 ]]
 
+--------------------------------------------------------------------------------
 print('cURL version: ' .. curl.curl_version() .. '\n')
 --------------------------------------------------------------------------------
 
@@ -256,7 +314,10 @@ print('cURL version: ' .. curl.curl_version() .. '\n')
 --curl.curl_easy_do(apptivegrid2)
 --curl.curl_easy_do(function (cu) apptivegrid_upload(cu, entity_json) end)
 --curl.curl_easy_do(function (cu) apptivegrid_upload_1(cu, entity_json) end)
-curl.curl_easy_do(aws)
+local url = curl.curl_easy_do(aws_geturl)
+--local url = curl.curl_easy_do(aws_puturl(url, 'Hello, World!'))
+local response = curl.curl_easy_do(aws_get(url))
+print(response)
 
 
 --------------------------------------------------------------------------------

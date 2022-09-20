@@ -332,9 +332,53 @@ static int l_curl_version(lua_State *L) {
 	return 1;
 }
 
+static int l_curl_getdate(lua_State *L) {
+	
+	const char *datestr = lua_tostring(L, -1);
+	time_t t = curl_getdate(datestr, NULL);
+
+	lua_pushinteger(L, t);
+
+	return 1;
+}
+
+static int l_curl_easy_escape(lua_State *L) {
+	
+	CURL *curl = (CURL *)lua_touserdata(L, -2);
+	const char *str = lua_tostring(L, -1);
+	
+	char *encoded = curl_easy_escape(curl, str, 0);
+	
+	lua_pushstring(L, encoded);
+
+	return 1;
+}
+
+static int l_curl_easy_unescape(lua_State *L) {
+	
+	CURL *curl = (CURL *)lua_touserdata(L, -2);
+	const char *str = lua_tostring(L, -1);
+	int size;	
+
+	char *decoded = curl_easy_unescape(curl, str, 0, &size);
+	
+	lua_pushstring(L, decoded);
+	lua_pushinteger(L, size);
+
+	return 2;
+}
+
+static int l_curl_free(lua_State *L) {
+	char *str = lua_tostring(L, -1);
+	curl_free(str);
+
+	return 0;
+}
+
 static int l_libc_free(lua_State *L) {
 	void *p = lua_touserdata(L, -1);
 	free(p);
+
 	return 0;
 }
 
@@ -380,7 +424,11 @@ static const struct luaL_Reg libcurl [] = {
 	{"curl_slist_append", l_curl_slist_append},
 	{"curl_slist_free_all", l_curl_slist_free_all},
 	{"curl_version", l_curl_version},
+	{"curl_getdate", l_curl_getdate},
+	{"curl_easy_escape", l_curl_easy_escape},
+	{"curl_easy_unescape", l_curl_easy_unescape},
 	{"libc_free", l_libc_free},
+	{"curl_free", l_curl_free},
 	{"test", l_test},
 	{"test_func", l_test_func},
 	{NULL, NULL} /* sentinel */
