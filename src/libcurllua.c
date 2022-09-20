@@ -204,23 +204,23 @@ struct memory {
  
 static size_t cb(void *data, size_t size, size_t nmemb, void *userp)
 {
-  assert(size == 1); // according to the documentation.
-  
-  size_t realsize = size * nmemb;
-  
-  struct memory *mem = (struct memory *)userp;
+	assert(size == 1); // according to the documentation.
 
-  char *ptr = realloc(mem->response, mem->size + realsize + 1);
+	size_t realsize = size * nmemb;
 
-  if(ptr == NULL)
-    return 0;  
+	struct memory *mem = (struct memory *)userp;
 
-  mem->response = ptr;
-  memcpy(&(mem->response[mem->size]), data, realsize);
-  mem->size += realsize;
-  mem->response[mem->size] = 0;
+	char *ptr = realloc(mem->response, mem->size + realsize + 1);
 
-  return realsize;
+	if(ptr == NULL)
+	return 0;  
+
+	mem->response = ptr;
+	memcpy(&(mem->response[mem->size]), data, realsize);
+	mem->size += realsize;
+	mem->response[mem->size] = 0;
+
+	return realsize;
 }
 
 static size_t cb1(void *data, size_t size, size_t nmemb, void *userp)
@@ -241,63 +241,52 @@ static size_t cb1(void *data, size_t size, size_t nmemb, void *userp)
 
 static int l_curl_easy_setopt_writefunction(lua_State *L) {
 	
-	CURL *curl = (CURL *)lua_touserdata(L, -2);
-	
-	CURLcode code =	curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, cb);
-	
-	lua_pushinteger(L, code);
-
-	return 1;
-}
-
-static int l_curl_easy_setopt_writedata(lua_State *L) {
-	
-	CURL *curl = (CURL *)lua_touserdata(L, -2);
-	
-	struct memory *mem = (struct memory *) malloc( sizeof( struct memory ));
-	mem->L = L;
-	mem->response = NULL;
-	mem->size = 0;
-	
-	CURLcode code = curl_easy_setopt(curl, CURLOPT_WRITEDATA,  mem);
-	
-	lua_pushinteger(L, code);
-	lua_pushlightuserdata(L, mem);
-
-	return 2;
-}
-
-static int l_curl_easy_setopt_writefunction1(lua_State *L) {
-	
 	CURL *curl = (CURL *)lua_touserdata(L, -2); 	// the second argument is the callback function
-	lua_State *S = lua_newthread (L); // such a new thread is pushed on L also.
-	lua_pushlightuserdata(S, (void *) L); // put the current state itself
-	lua_pushvalue(L, -2);	// duplicate the given function
-	lua_xmove(L, S, 1);
-
-	CURLcode code =	curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, cb1);
-
+	int isfunction = lua_isfunction(L, -1);
+	
+	lua_State *S;
+	CURLcode code;
+	
+	if (isfunction == 1) {
+		S = lua_newthread (L); // such a new thread is pushed on L also.
+		lua_pushlightuserdata(S, (void *) L); // put the current state itself
+		lua_pushvalue(L, -2);	// duplicate the given function
+		lua_xmove(L, S, 1);	// then save the doubled reference to the helper state.
+		
+		code =	curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, cb1);
+	} else {
+		S = NULL;
+		code =	curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, cb);
+	}
+	
 	struct memory *mem = (struct memory *) malloc( sizeof( struct memory ));
 	mem->L = S;
 	mem->response = NULL;
 	mem->size = 0;
 	
-	code = curl_easy_setopt(curl, CURLOPT_WRITEDATA,  mem);
-	assert(code == 0);
+	CURLcode ccode = curl_easy_setopt(curl, CURLOPT_WRITEDATA,  mem);
+	assert(ccode == 0);
 	
 	lua_pushinteger(L, code);
-	lua_pushvalue(L, -2);	// duplicate the working thread
-	lua_remove(L, -3);	// cleanup a doubled value
 	lua_pushlightuserdata(L, mem);
+	
+	int nargs = 2;
+	
+	if (S != NULL) {
+		lua_pushvalue(L, -3);	// duplicate the working thread
+		lua_remove(L, -4);	// cleanup a doubled value
+		nargs++;
+	}
 
-	return 3;
+	return nargs;
 }
 
 static int l_curl_easy_getopt_writedata(lua_State *L) {
 	
 	struct memory *mem = (struct memory *)lua_touserdata(L, -1);
 	lua_pushstring(L, mem->response);
-	return 1;
+	lua_pushinteger(L, mem->size);
+	return 2;
 }
 
 
@@ -354,8 +343,6 @@ static const struct luaL_Reg libcurl [] = {
 	{"curl_easy_setopt_postfields", l_curl_easy_setopt_postfields},
 	{"curl_easy_setopt_httpheader", l_curl_easy_setopt_httpheader},
 	{"curl_easy_setopt_writefunction", l_curl_easy_setopt_writefunction},
-	{"curl_easy_setopt_writefunction1", l_curl_easy_setopt_writefunction1},
-	{"curl_easy_setopt_writedata", l_curl_easy_setopt_writedata},
 	{"curl_easy_getinfo_response_code", l_curl_easy_getinfo_response_code},
 	{"curl_easy_getopt_writedata", l_curl_easy_getopt_writedata},
 	{"curl_easy_perform", l_curl_easy_perform},
