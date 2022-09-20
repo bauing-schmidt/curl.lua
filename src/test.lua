@@ -195,6 +195,42 @@ local function apptivegrid_upload_1 (cu, entity_json)
 	assert(response_code == 201)
 end
 
+local function aws (cu)
+	
+	--[[
+	do a GET request at https://7zzn3khlt1.execute-api.eu-central-1.amazonaws.com/uploads with two post arguments:
+	fileName (arbitrary, test.txt) and fileType (application/octet-stream)
+	a json should return with a key 'uploadURL', let be `v` its value.
+	do a PUT request at `v` and then a GET to get back the file.
+	]]--
+
+	local returns = curl.curl_easy_httpheader_setopt_getinfo {
+		httpheader	= { 
+			['Content-Type'] = 'application/json',
+		},
+		setopt		= {	
+			url = 'https://7zzn3khlt1.execute-api.eu-central-1.amazonaws.com/uploads?fileName=test.txt&fileType=application/octet-stream',
+			verbose = true,
+			header = false,
+			cainfo = 'curl-ca-bundle.crt',
+			writefunction = true,
+		}
+	} (cu)
+
+	local code, response, size = returns.writefunction()
+	assert(code == 0)
+	
+	local urls = {}
+	for k in string.gmatch(response, '"uploadURL":"([%w%p]+)"') do
+       		table.insert(urls, k)
+     	end
+     	local i = string.find(urls[1], '"', 1, true)
+     	local url = string.sub(urls[1], 1, i - 1)
+     	print(url)
+	
+	
+end
+
 local entity_json = [[
 
   {
@@ -218,14 +254,9 @@ local entity_json = [[
 --curl.curl_easy_do(apptivegrid1)
 --curl.curl_easy_do(apptivegrid2)
 --curl.curl_easy_do(function (cu) apptivegrid_upload(cu, entity_json) end)
-curl.curl_easy_do(function (cu) apptivegrid_upload_1(cu, entity_json) end)
+--curl.curl_easy_do(function (cu) apptivegrid_upload_1(cu, entity_json) end)
+curl.curl_easy_do(aws)
 
---[[
-do a GET request at https://7zzn3khlt1.execute-api.eu-central-1.amazonaws.com/uploads with two post arguments:
-fileName (arbitrary, test.txt) and fileType (application/octet-stream)
-a json should return with a key 'uploadURL', let be `v` its value.
-do a PUT request at `v` and then a GET to get back the file.
-]]--
 
 --------------------------------------------------------------------------------
 

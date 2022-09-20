@@ -83,7 +83,7 @@ function curl.curl_easy_httpheader_setopt_getinfo (tbl)
 	local headers_tbl, setopt_tbl, getinfo_tbl = tbl.httpheader, tbl.setopt, tbl.getinfo
 	
 	if not headers_tbl then	headers_tbl = {} end
-	
+	if not setopt_tbl  then	setopt_tbl  = {} end
 	if not getinfo_tbl then	getinfo_tbl = {} end
 
 	return function (cu)
@@ -93,13 +93,11 @@ function curl.curl_easy_httpheader_setopt_getinfo (tbl)
 				
 		local returns = curl.curl_easy_setopt(cu, setopt_tbl)
 
-		local has_writefunction = false
+		local has_writefunction = type(returns.writefunction) == 'function'	-- because we use thunks to get results
 		local code, memory, thread
-		if type(returns.writefunction) == 'function' then
+		if has_writefunction then
 			code, memory, thread = returns.writefunction()
 			assert(code == 0)
-			
-			has_writefunction = true
 		end
 
 		local pcode = curl.curl_easy_perform(cu) -- go!
