@@ -369,8 +369,8 @@ static int l_curl_easy_unescape(lua_State *L) {
 }
 
 static int l_curl_free(lua_State *L) {
-	char *str = lua_tostring(L, -1);
-	curl_free(str);
+	const char *str = lua_tostring(L, -1);
+	curl_free((char *)str);
 
 	return 0;
 }

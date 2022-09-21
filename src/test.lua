@@ -314,10 +314,11 @@ print('cURL version: ' .. curl.curl_version() .. '\n')
 --curl.curl_easy_do(apptivegrid2)
 --curl.curl_easy_do(function (cu) apptivegrid_upload(cu, entity_json) end)
 --curl.curl_easy_do(function (cu) apptivegrid_upload_1(cu, entity_json) end)
+
 local url = curl.curl_easy_do(aws_geturl)
---local url = curl.curl_easy_do(aws_puturl(url, 'Hello, World!'))
-local response = curl.curl_easy_do(aws_get(url))
-print(response)
+local url = curl.curl_easy_do(aws_puturl(url, 'Hello, World!'))
+--local response = curl.curl_easy_do(aws_get(url))
+--print(response)
 
 
 --------------------------------------------------------------------------------
