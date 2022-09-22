@@ -103,6 +103,18 @@ static int l_curl_easy_setopt_httpget(lua_State *L) {
 	return 1;
 }
 
+static int l_curl_easy_setopt_upload(lua_State *L) {
+	
+	CURL *curl = (CURL *)lua_touserdata(L, -2);
+	int upload = lua_toboolean(L, -1);
+
+	CURLcode code =	curl_easy_setopt(curl, CURLOPT_UPLOAD, upload);
+
+	lua_pushinteger(L, code);
+
+	return 1;
+}
+
 static int l_curl_easy_setopt_verbose(lua_State *L) {
 	
 	CURL *curl = (CURL *)lua_touserdata(L, -2);
@@ -313,6 +325,54 @@ static int l_curl_easy_setopt_writefunction(lua_State *L) {
 	return 3;
 }
 
+size_t read_callback(char *buffer, size_t size, size_t nitems, void *userdata) {
+
+	struct memory *mem = (struct memory *)userdata;
+
+	lua_State *L = (lua_State *) lua_touserdata(mem->L, -2);
+	lua_pushvalue(mem->L, -1);	// duplicate the callback function for repeated applications of it.
+	lua_xmove(mem->L, L, 1);
+	lua_pushinteger(L, size * nitems);
+	lua_call(L, 1, 1);
+	const char *substr = lua_tostring(L, -1);
+	lua_pop(L, 1);
+	strcpy(buffer, substr);
+	return strlen(substr);
+
+}
+
+static int l_curl_easy_setopt_readfunction(lua_State *L) {
+	
+	CURL *curl = (CURL *)lua_touserdata(L, -2); 	// the second argument is the callback function
+	assert(lua_isfunction(L, -1));
+	
+	lua_State *S;
+	CURLcode code;
+	
+	S = lua_newthread (L); // such a new thread is pushed on L also.
+	lua_pushlightuserdata(S, (void *) L); // put the current state itself
+	lua_pushvalue(L, -2);	// duplicate the given function
+	lua_xmove(L, S, 1);	// then save the doubled reference to the helper state.
+	
+	code = curl_easy_setopt(curl, CURLOPT_READFUNCTION, read_callback);
+	
+	struct memory *mem = (struct memory *) malloc( sizeof( struct memory ));
+	mem->L = S;
+	mem->response = NULL;
+	mem->size = 0;
+	
+	CURLcode ccode = curl_easy_setopt(curl, CURLOPT_READDATA,  mem);
+	assert(ccode == 0);
+	
+	lua_pushinteger(L, code);
+	lua_pushlightuserdata(L, mem);
+	
+	lua_pushvalue(L, -3);	// duplicate the working thread
+	lua_remove(L, -4);	// cleanup a doubled value
+
+	return 3;
+}
+
 static int l_curl_easy_getopt_writedata(lua_State *L) {
 	
 	struct memory *mem = (struct memory *)lua_touserdata(L, -1);
@@ -422,6 +482,7 @@ static const struct luaL_Reg libcurl [] = {
 	{"curl_easy_setopt_header", l_curl_easy_setopt_header},
 	{"curl_easy_setopt_netrc", l_curl_easy_setopt_netrc},
 	{"curl_easy_setopt_post", l_curl_easy_setopt_post},
+	{"curl_easy_setopt_upload", l_curl_easy_setopt_upload},
 	{"curl_easy_setopt_httpget", l_curl_easy_setopt_httpget},
 	{"curl_easy_setopt_verbose", l_curl_easy_setopt_verbose},
 	{"curl_easy_setopt_capath", l_curl_easy_setopt_capath},
@@ -431,6 +492,7 @@ static const struct luaL_Reg libcurl [] = {
 	{"curl_easy_setopt_postfields", l_curl_easy_setopt_postfields},
 	{"curl_easy_setopt_httpheader", l_curl_easy_setopt_httpheader},
 	{"curl_easy_setopt_writefunction", l_curl_easy_setopt_writefunction},
+	{"curl_easy_setopt_readfunction", l_curl_easy_setopt_readfunction},
 	{"curl_easy_getinfo_response_code", l_curl_easy_getinfo_response_code},
 	{"curl_easy_getopt_writedata", l_curl_easy_getopt_writedata},
 	{"curl_easy_perform", l_curl_easy_perform},

@@ -116,7 +116,6 @@ end
 
 local function apptivegrid2 (cu)
 
-			
 	local c, amount = 0, 0
 	local function logger (data, size)
 		-- this function is interesting because catches some outer vars.
@@ -230,7 +229,6 @@ local function aws_geturl (params_tbl)
 		} (cu)
 
 		local code, response, size = returns.writefunction()
-		print(response)
 		assert(code == curl.CURLcode.CURLE_OK)
 		
 		local urls = {}
@@ -244,8 +242,21 @@ local function aws_geturl (params_tbl)
 	end
 end
 
-local function aws_puturl (url, payload)
 
+local function S (str)
+
+	local i = 1	-- the index that remembers the next character to copy from payload
+
+	return function (atmost)
+		local chunk = string.sub(str, i, i + atmost - 1)
+		i = i + atmost
+		print('CHUNK: '..chunk)
+		return chunk
+	end
+end
+
+local function aws_puturl (url, payload)
+	
 	return function (cu)
 	
 		returns, getinfos = curl.curl_easy_httpheader_setopt_getinfo {
@@ -256,7 +267,9 @@ local function aws_puturl (url, payload)
 				url = url,	-- use here the URL received in the previous call.
 				verbose = true,
 				header = false,
-				postfields = payload,
+				--postfields = payload,	-- wrong!
+				readfunction = S(payload),
+				upload = true,
 				cainfo = 'curl-ca-bundle.crt',
 				netrc = curl.opt_netrc.CURL_NETRC_OPTIONAL,
 			},
@@ -325,7 +338,7 @@ print('cURL version: ' .. curl.curl_version() .. '\n')
 --curl.curl_easy_do(function (cu) apptivegrid_upload_1(cu, entity_json) end)
 
 local url = curl.curl_easy_do(aws_geturl({ fileName='test.txt', fileType='application/octet-stream' }))
-print('\nPut\n')
+print('\n**PUT**\n')
 local url = curl.curl_easy_do(aws_puturl(url, 'Hello, World!'))
 --local response = curl.curl_easy_do(aws_get(url))
 --print(response)
