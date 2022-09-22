@@ -329,10 +329,11 @@ size_t read_callback(char *buffer, size_t size, size_t nitems, void *userdata) {
 
 	struct memory *mem = (struct memory *)userdata;
 
+
 	lua_State *L = (lua_State *) lua_touserdata(mem->L, -2);
 	lua_pushvalue(mem->L, -1);	// duplicate the callback function for repeated applications of it.
 	lua_xmove(mem->L, L, 1);
-	lua_pushinteger(L, size * nitems);
+	lua_pushinteger(L, size * nitems-1);
 	lua_call(L, 1, 1);
 	const char *substr = lua_tostring(L, -1);
 	lua_pop(L, 1);

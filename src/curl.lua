@@ -216,7 +216,16 @@ function curl.curl_easy_httpheader_setopt_getinfo (tbl)
 			assert(#response == size)
 			returns.writefunction = function () return code, response, size end
 		end
-		
+
+		if type(returns.readfunction) == 'function' then
+			local code, memory, thread = returns.readfunction()
+			assert(code == curl.CURLcode.CURLE_OK)
+			curl.libc_free(memory)
+			thread = nil
+
+			function returns.readfunction () return code, nil, nil end
+		end
+
 		local getinfos = curl.curl_easy_getinfo(cu, getinfo_tbl)
 		
 		return returns, getinfos

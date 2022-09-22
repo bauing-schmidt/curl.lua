@@ -248,6 +248,7 @@ local function S (str)
 	local i = 1	-- the index that remembers the next character to copy from payload
 
 	return function (atmost)
+		print(atmost)
 		local chunk = string.sub(str, i, i + atmost - 1)
 		i = i + atmost
 		print('CHUNK: '..chunk)
@@ -278,6 +279,9 @@ local function aws_puturl (url, payload)
 			}
 		} (cu)
 		
+		local code = returns.readfunction()
+		assert(code == curl.CURLcode.CURLE_OK)
+
 		local code, response_code = getinfos.response_code()
 		assert(code == curl.CURLcode.CURLE_OK)
 		assert(response_code == 403)
