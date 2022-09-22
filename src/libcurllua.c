@@ -91,6 +91,18 @@ static int l_curl_easy_setopt_post(lua_State *L) {
 	return 1;
 }
 
+static int l_curl_easy_setopt_httpget(lua_State *L) {
+	
+	CURL *curl = (CURL *)lua_touserdata(L, -2);
+	int get = lua_toboolean(L, -1);
+
+	CURLcode code =	curl_easy_setopt(curl, CURLOPT_HTTPGET, get);
+
+	lua_pushinteger(L, code);
+
+	return 1;
+}
+
 static int l_curl_easy_setopt_verbose(lua_State *L) {
 	
 	CURL *curl = (CURL *)lua_touserdata(L, -2);
@@ -410,6 +422,7 @@ static const struct luaL_Reg libcurl [] = {
 	{"curl_easy_setopt_header", l_curl_easy_setopt_header},
 	{"curl_easy_setopt_netrc", l_curl_easy_setopt_netrc},
 	{"curl_easy_setopt_post", l_curl_easy_setopt_post},
+	{"curl_easy_setopt_httpget", l_curl_easy_setopt_httpget},
 	{"curl_easy_setopt_verbose", l_curl_easy_setopt_verbose},
 	{"curl_easy_setopt_capath", l_curl_easy_setopt_capath},
 	{"curl_easy_setopt_cainfo", l_curl_easy_setopt_cainfo},
