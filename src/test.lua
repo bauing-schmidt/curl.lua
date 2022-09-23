@@ -286,14 +286,14 @@ local function aws_getcontent (url)
 	return function (cu)
 
 		local returns, getinfos = curl.curl_easy_httpheader_setopt_getinfo {
-			--httpheader	= { 
-			--	['Content-Type'] = 'application/octet-stream',
-			--},
+			httpheader	= { 
+				['Content-Type'] = 'application/octet-stream',
+			},
 			setopt		= {	
 				url = url,
 				verbose = true,
 				header = false,
-				httpget = true,
+				--httpget = true,
 				ssl_verifypeer = true,
 				ssl_verifyhost = true,
 				cainfo = 'curl-ca-bundle.crt',
