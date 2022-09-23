@@ -115,6 +115,30 @@ static int l_curl_easy_setopt_upload(lua_State *L) {
 	return 1;
 }
 
+static int l_curl_easy_setopt_upload_buffersize(lua_State *L) {
+	
+	CURL *curl = (CURL *)lua_touserdata(L, -2);
+	lua_Integer size = lua_tointeger(L, -1);
+
+	CURLcode code =	curl_easy_setopt(curl, CURLOPT_UPLOAD_BUFFERSIZE, size);
+
+	lua_pushinteger(L, code);
+
+	return 1;
+}
+
+static int l_curl_easy_setopt_infilesize(lua_State *L) {
+	
+	CURL *curl = (CURL *)lua_touserdata(L, -2);
+	lua_Integer size = lua_tointeger(L, -1);
+
+	CURLcode code =	curl_easy_setopt(curl, CURLOPT_INFILESIZE, size);
+
+	lua_pushinteger(L, code);
+
+	return 1;
+}
+
 static int l_curl_easy_setopt_verbose(lua_State *L) {
 	
 	CURL *curl = (CURL *)lua_touserdata(L, -2);
@@ -327,8 +351,9 @@ static int l_curl_easy_setopt_writefunction(lua_State *L) {
 
 size_t read_callback(char *buffer, size_t size, size_t nitems, void *userdata) {
 
-	struct memory *mem = (struct memory *)userdata;
+	assert(size == 1); // according to the documentation.
 
+	struct memory *mem = (struct memory *)userdata;
 
 	lua_State *L = (lua_State *) lua_touserdata(mem->L, -2);
 	lua_pushvalue(mem->L, -1);	// duplicate the callback function for repeated applications of it.
@@ -484,6 +509,8 @@ static const struct luaL_Reg libcurl [] = {
 	{"curl_easy_setopt_netrc", l_curl_easy_setopt_netrc},
 	{"curl_easy_setopt_post", l_curl_easy_setopt_post},
 	{"curl_easy_setopt_upload", l_curl_easy_setopt_upload},
+	{"curl_easy_setopt_upload_buffersize", l_curl_easy_setopt_upload_buffersize},
+	{"curl_easy_setopt_infilesize", l_curl_easy_setopt_infilesize},
 	{"curl_easy_setopt_httpget", l_curl_easy_setopt_httpget},
 	{"curl_easy_setopt_verbose", l_curl_easy_setopt_verbose},
 	{"curl_easy_setopt_capath", l_curl_easy_setopt_capath},

@@ -194,7 +194,7 @@ local function apptivegrid_upload_1 (cu, entity_json)
 	assert(response_code == 201)
 end
 
-local function aws_geturl (params_tbl)
+local function aws_geturl (url_head, params_tbl)
 
 	-- prepare the param string to be given either as payload or in the url suffix
 	local params = {}
@@ -216,14 +216,12 @@ local function aws_geturl (params_tbl)
 			httpheader	= { 
 				['Content-Type'] = 'application/json',
 			},
-			setopt		= {	
-				--url = 'https://7zzn3khlt1.execute-api.eu-central-1.amazonaws.com/uploads'
-				url = 'https://7zzn3khlt1.execute-api.eu-central-1.amazonaws.com/uploads?' .. params,
+			setopt		= {
+				url = url_head .. '?' .. params,
 				verbose = true,
 				header = false,
 				cainfo = 'curl-ca-bundle.crt',
-				--postfields = params,
-				httpget = true,	-- mandatory, because we want a GET request while the previous `postfields` sets UPLOAD automatically.
+				httpget = true,	-- should be of default, set it here to check that it actually works.
 				writefunction = true,	-- means that we just want the whole response, not interested in its chunks.
 			}
 		} (cu)
@@ -231,6 +229,7 @@ local function aws_geturl (params_tbl)
 		local code, response, size = returns.writefunction()
 		assert(code == curl.CURLcode.CURLE_OK)
 		
+		-- parse the URL in the provided json, quick approach because the content is very small.
 		local urls = {}
 		for k in string.gmatch(response, '"uploadURL":"([%w%p]+)"') do
 			table.insert(urls, k)
@@ -242,24 +241,14 @@ local function aws_geturl (params_tbl)
 	end
 end
 
-
-local function S (str)
-
-	local i = 1	-- the index that remembers the next character to copy from payload
-
-	return function (atmost)
-		print(atmost)
-		local chunk = string.sub(str, i, i + atmost - 1)
-		i = i + atmost
-		print('CHUNK: '..chunk)
-		return chunk
-	end
-end
-
 local function aws_puturl (url, payload)
-	
+
 	return function (cu)
 	
+		local function C (step, atmost, chunk)  
+			print(string.format('___%d: atmost %d, chunk "%s"', step, atmost, chunk))
+		end
+
 		returns, getinfos = curl.curl_easy_httpheader_setopt_getinfo {
 			httpheader	= { 
 				['Content-Type'] = 'text/plain',
@@ -268,9 +257,9 @@ local function aws_puturl (url, payload)
 				url = url,	-- use here the URL received in the previous call.
 				verbose = true,
 				header = false,
-				--postfields = payload,	-- wrong!
-				readfunction = S(payload),
+				readfunction = curl.chunked(payload, C),
 				upload = true,
+				infilesize = #payload,
 				cainfo = 'curl-ca-bundle.crt',
 				netrc = curl.opt_netrc.CURL_NETRC_OPTIONAL,
 			},
@@ -284,7 +273,7 @@ local function aws_puturl (url, payload)
 
 		local code, response_code = getinfos.response_code()
 		assert(code == curl.CURLcode.CURLE_OK)
-		assert(response_code == 403)
+		assert(response_code == 200)
 
 	end	
 end
@@ -341,8 +330,12 @@ print('cURL version: ' .. curl.curl_version() .. '\n')
 --curl.curl_easy_do(function (cu) apptivegrid_upload(cu, entity_json) end)
 --curl.curl_easy_do(function (cu) apptivegrid_upload_1(cu, entity_json) end)
 
-local url = curl.curl_easy_do(aws_geturl({ fileName='test.txt', fileType='application/octet-stream' }))
+local url = curl.curl_easy_do(
+	aws_geturl(	'https://7zzn3khlt1.execute-api.eu-central-1.amazonaws.com/uploads',
+				{ fileName='test.txt', fileType='application/octet-stream' }))
+
 print('\n**PUT**\n')
+
 local url = curl.curl_easy_do(aws_puturl(url, 'Hello, World!'))
 --local response = curl.curl_easy_do(aws_get(url))
 --print(response)

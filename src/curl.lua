@@ -214,7 +214,7 @@ function curl.curl_easy_httpheader_setopt_getinfo (tbl)
 			curl.libc_free(memory)
 			
 			assert(#response == size)
-			returns.writefunction = function () return code, response, size end
+			function returns.writefunction () return code, response, size end
 		end
 
 		if type(returns.readfunction) == 'function' then
@@ -232,6 +232,22 @@ function curl.curl_easy_httpheader_setopt_getinfo (tbl)
 	end
 end
 
+function curl.chunked (str, callback)
+
+	callback = callback or function (...) end
+	local i = 1	-- the index that remembers the next character to copy from payload
+	local step = 1
+
+	return function (atmost)
+		local chunk = string.sub(str, i, i + atmost - 1)
+
+		callback(step, atmost, chunk)	-- just inform about the current chunk.
+
+		step = step + 1
+		i = i + atmost
+		return chunk
+	end
+end
 
 
 return curl
