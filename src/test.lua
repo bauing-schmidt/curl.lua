@@ -247,7 +247,7 @@ local function aws_puturl (url, payload)
 
 	return function (cu)
 	
-		local function C (step, atmost, chunk)  
+		local function C (step, atmost, chunk)
 			--print(string.format('___%d: atmost %d, chunk "%s"', step, atmost, chunk))
 		end
 
@@ -261,17 +261,21 @@ local function aws_puturl (url, payload)
 				header = false,
 				ssl_verifypeer = true,
 				ssl_verifyhost = true,
-				readfunction = curl.chunked(payload, C),
+				--readfunction = curl.chunked(payload, C),
+				readfunction_filename = "/home/mn/test.txt",
+				--readfunction_string = payload,
+				post = false,
+				httpget = false,
 				upload = true,
 				infilesize = #payload,
 				cainfo = 'curl-ca-bundle.crt',
 			},
 			getinfo 	= { 
-				'response_code' 
+				'response_code'
 			}
 		} (cu)
 		
-		local code = returns.readfunction()
+		local code = returns.readfunction_filename()
 		assert(code == curl.CURLcode.CURLE_OK)
 
 		local code, response_code = getinfos.response_code()
@@ -293,7 +297,7 @@ local function aws_getcontent (url)
 				url = url,
 				verbose = true,
 				header = false,
-				--httpget = true,
+				httpget = true,
 				ssl_verifypeer = true,
 				ssl_verifyhost = true,
 				cainfo = 'curl-ca-bundle.crt',

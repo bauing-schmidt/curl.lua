@@ -226,6 +226,22 @@ function curl.curl_easy_httpheader_setopt_getinfo (tbl)
 			function returns.readfunction () return code, nil, nil end
 		end
 
+		if type(returns.readfunction_filename) == 'function' then
+			local code, file = returns.readfunction_filename()
+			assert(code == curl.CURLcode.CURLE_OK)
+			curl.libc_fclose(file)
+
+			function returns.readfunction_filename () return code, nil, nil end
+		end
+
+		if type(returns.readfunction_string) == 'function' then
+			local code, memory = returns.readfunction_string()
+			assert(code == curl.CURLcode.CURLE_OK)
+			curl.libc_free(memory)
+
+			function returns.readfunction_string () return code, nil, nil end
+		end
+
 		local getinfos = curl.curl_easy_getinfo(cu, getinfo_tbl)
 		
 		return returns, getinfos

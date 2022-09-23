@@ -428,13 +428,14 @@ size_t read_callback_filename(char *ptr, size_t size, size_t nmemb, void *userda
 	FILE *readhere = (FILE *)userdata;
 	curl_off_t nread;
 	
-	/* copy as much data as possible into the 'ptr' buffer, but no more than 'size' * 'nmemb' bytes! */
+	/* copy as much data as possible into the 'ptr' buffer, 
+	   but no more than 'size' * 'nmemb' bytes! */
 	size_t retcode = fread(ptr, size, nmemb, readhere);
 	
 	nread = (curl_off_t)retcode;
 	
-	fprintf(stderr, "*** We read %" CURL_FORMAT_CURL_OFF_T
-			" bytes from file\n", nread);
+	fprintf(stderr, "*** We read %" CURL_FORMAT_CURL_OFF_T " bytes from file\n", nread);
+	fflush(stdout);
 	
 	return retcode;
 }
@@ -463,9 +464,9 @@ size_t read_callback_string(char *ptr, size_t size, size_t nmemb, void *userdata
 
 	struct memory *mem = (struct memory *)userdata;
 
-	size_t n;
+	size_t n = mem->size;
 
-	if (mem->size > 0) {
+	if (n > 0) {
 
 		n = mem->size < nmemb ? mem->size : nmemb;
 
@@ -477,8 +478,11 @@ size_t read_callback_string(char *ptr, size_t size, size_t nmemb, void *userdata
 		mem->size = mem->size - n;
 
 	} else {
-		n = 0;
+		n = 0;	// to protect against negative values.
 	}
+
+	printf("_______________________________________-asked for %d of %d: %s\n", (int)n, (int)nmemb, ptr);
+	fflush(stdout);
 
 	return n;
 }
@@ -492,8 +496,9 @@ static int l_curl_easy_setopt_readfunction_string(lua_State *L) {
 
 	struct memory *mem = (struct memory *) malloc( sizeof( struct memory ));
 	mem->L = L;
-	mem->response = (char *) str;
-	mem->size = strlen(str);
+	mem->size = strlen(str) + 1;
+	mem->response = (char *) malloc (sizeof(char) * mem->size);
+	strcpy(mem->response, str);	// need to copy because Lua reclaims its string.
 
 	CURLcode ccode = curl_easy_setopt(curl, CURLOPT_READDATA,  mem);
 	assert(ccode == 0);
