@@ -251,7 +251,7 @@ local function aws_puturl (url, payload)
 
 		returns, getinfos = curl.curl_easy_httpheader_setopt_getinfo {
 			httpheader	= { 
-				['Content-Type'] = 'text/plain',
+				['Content-Type'] = 'application/octet-stream',
 			},
 			setopt		= {
 				url = url,	-- use here the URL received in the previous call.
@@ -283,7 +283,7 @@ local function aws_getcontent (url)
 	
 		local returns, getinfos = curl.curl_easy_httpheader_setopt_getinfo {
 			httpheader	= { 
-				['Content-Type'] = 'text/plain',
+				['Content-Type'] = 'application/octet-stream',
 			},
 			setopt		= {	
 				url = url,
@@ -292,11 +292,18 @@ local function aws_getcontent (url)
 				httpget = true,
 				cainfo = 'curl-ca-bundle.crt',
 				writefunction = true,
+			},
+			getinfo 	= { 
+				'response_code' 
 			}
 		} (cu)
 
 		local code, response, size = returns.writefunction()
 		assert(code == curl.CURLcode.CURLE_OK)
+
+		local code, response_code = getinfos.response_code()
+		assert(code == curl.CURLcode.CURLE_OK)
+		assert(response_code == 403)
 		
 		return response
 
@@ -335,12 +342,11 @@ local url = curl.curl_easy_do(
 				{ fileName='test.txt', fileType='application/octet-stream' }))
 
 print('\n**PUT**\n')
-
+print(url)
 curl.curl_easy_do(aws_puturl(url, 'Hello, World!'))
 
 local response = curl.curl_easy_do(aws_getcontent(url))
-print('___: '..response)
-
+--print('___: '..response)
 
 --------------------------------------------------------------------------------
 

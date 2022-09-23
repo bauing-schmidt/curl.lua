@@ -11,6 +11,12 @@
 #include <lauxlib.h>
 #include <curl/curl.h>
 
+struct memory {
+	lua_State *L;
+	char *response;
+	size_t size;
+};
+
 /* CURL *curl_easy_init(void); */
 static int l_curl_easy_init(lua_State *L) {
 	
@@ -264,12 +270,6 @@ static int l_curl_slist_free_all(lua_State *L) {
 
 	return 0;
 }
-
-struct memory {
-	lua_State *L;
-	char *response;
-	size_t size;
-};
  
 static size_t cb(void *data, size_t size, size_t nmemb, void *userp)
 {
@@ -399,6 +399,87 @@ static int l_curl_easy_setopt_readfunction(lua_State *L) {
 	return 3;
 }
 
+size_t read_callback_filename(char *ptr, size_t size, size_t nmemb, void *userdata)
+{
+	FILE *readhere = (FILE *)userdata;
+	curl_off_t nread;
+	
+	/* copy as much data as possible into the 'ptr' buffer, but no more than 'size' * 'nmemb' bytes! */
+	size_t retcode = fread(ptr, size, nmemb, readhere);
+	
+	nread = (curl_off_t)retcode;
+	
+	fprintf(stderr, "*** We read %" CURL_FORMAT_CURL_OFF_T
+			" bytes from file\n", nread);
+	
+	return retcode;
+}
+
+static int l_curl_easy_setopt_readfunction_filename(lua_State *L) {
+	
+	CURL *curl = (CURL *)lua_touserdata(L, -2);
+	const char *filename = lua_tostring(L, -1);
+	
+	FILE *file = fopen(filename, "rb");
+
+	CURLcode code = curl_easy_setopt(curl, CURLOPT_READFUNCTION, read_callback_filename);
+
+	CURLcode ccode = curl_easy_setopt(curl, CURLOPT_READDATA,  file);
+	assert(ccode == 0);
+	
+	lua_pushinteger(L, code);
+	lua_pushlightuserdata(L, file);
+	
+	return 2;
+}
+
+size_t read_callback_string(char *ptr, size_t size, size_t nmemb, void *userdata)
+{
+	assert(size == 1);
+
+	struct memory *mem = (struct memory *)userdata;
+
+	size_t n;
+
+	if (mem->size > 0) {
+
+		n = mem->size < nmemb ? mem->size : nmemb;
+
+		char *copied = strncpy(ptr, mem->response, n);
+
+		assert(copied == ptr);	// according to the documentation
+
+		mem->response = mem->response + n;
+		mem->size = mem->size - n;
+
+	} else {
+		n = 0;
+	}
+
+	return n;
+}
+
+static int l_curl_easy_setopt_readfunction_string(lua_State *L) {
+	
+	CURL *curl = (CURL *)lua_touserdata(L, -2);
+	const char *str = lua_tostring(L, -1);
+
+	CURLcode code = curl_easy_setopt(curl, CURLOPT_READFUNCTION, read_callback_string);
+
+	struct memory *mem = (struct memory *) malloc( sizeof( struct memory ));
+	mem->L = L;
+	mem->response = (char *) str;
+	mem->size = strlen(str);
+
+	CURLcode ccode = curl_easy_setopt(curl, CURLOPT_READDATA,  mem);
+	assert(ccode == 0);
+	
+	lua_pushinteger(L, code);
+	lua_pushlightuserdata(L, mem);
+	
+	return 2;
+}
+
 static int l_curl_easy_getopt_writedata(lua_State *L) {
 	
 	struct memory *mem = (struct memory *)lua_touserdata(L, -1);
@@ -406,7 +487,6 @@ static int l_curl_easy_getopt_writedata(lua_State *L) {
 	lua_pushinteger(L, mem->size);
 	return 2;
 }
-
 
 static int l_curl_easy_getinfo_response_code(lua_State *L) {
 	
@@ -480,6 +560,15 @@ static int l_libc_free(lua_State *L) {
 	return 0;
 }
 
+static int l_libc_fclose(lua_State *L) {
+	FILE *p = (FILE *) lua_touserdata(L, -1);
+	int r = fclose(p);
+
+	lua_pushinteger(L, r);
+
+	return 1;
+}
+
 static int l_test(lua_State *L) {
 	lua_State *S = lua_newthread (L); // such a new thread is pushed on L also.
 	lua_Integer i = lua_tointeger(L, -2);
@@ -521,6 +610,8 @@ static const struct luaL_Reg libcurl [] = {
 	{"curl_easy_setopt_httpheader", l_curl_easy_setopt_httpheader},
 	{"curl_easy_setopt_writefunction", l_curl_easy_setopt_writefunction},
 	{"curl_easy_setopt_readfunction", l_curl_easy_setopt_readfunction},
+	{"curl_easy_setopt_readfunction_filename", l_curl_easy_setopt_readfunction_filename},
+	{"curl_easy_setopt_readfunction_string", l_curl_easy_setopt_readfunction_string},
 	{"curl_easy_getinfo_response_code", l_curl_easy_getinfo_response_code},
 	{"curl_easy_getopt_writedata", l_curl_easy_getopt_writedata},
 	{"curl_easy_perform", l_curl_easy_perform},
@@ -531,6 +622,7 @@ static const struct luaL_Reg libcurl [] = {
 	{"curl_easy_escape", l_curl_easy_escape},
 	{"curl_easy_unescape", l_curl_easy_unescape},
 	{"libc_free", l_libc_free},
+	{"libc_fclose", l_libc_fclose},
 	{"curl_free", l_curl_free},
 	{"test", l_test},
 	{"test_func", l_test_func},
