@@ -220,8 +220,8 @@ local function aws_geturl (url_head, params_tbl)
 				url = url_head .. '?' .. params,
 				verbose = true,
 				header = false,
-				verifypeer = true,
-				verifyhost = true,
+				ssl_verifypeer = true,
+				ssl_verifyhost = true,
 				cainfo = 'curl-ca-bundle.crt',
 				httpget = true,	-- should be of default, set it here to check that it actually works.
 				writefunction = true,	-- means that we just want the whole response, not interested in its chunks.
@@ -259,8 +259,8 @@ local function aws_puturl (url, payload)
 				url = url,	-- use here the URL received in the previous call.
 				verbose = true,
 				header = false,
-				verifypeer = true,
-				verifyhost = true,
+				ssl_verifypeer = true,
+				ssl_verifyhost = true,
 				readfunction = curl.chunked(payload, C),
 				upload = true,
 				infilesize = #payload,
@@ -294,8 +294,8 @@ local function aws_getcontent (url)
 				verbose = true,
 				header = false,
 				httpget = true,
-				verifypeer = true,
-				verifyhost = true,
+				ssl_verifypeer = true,
+				ssl_verifyhost = true,
 				cainfo = 'curl-ca-bundle.crt',
 				writefunction = true,
 			},
