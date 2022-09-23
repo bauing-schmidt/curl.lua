@@ -220,6 +220,8 @@ local function aws_geturl (url_head, params_tbl)
 				url = url_head .. '?' .. params,
 				verbose = true,
 				header = false,
+				verifypeer = true,
+				verifyhost = true,
 				cainfo = 'curl-ca-bundle.crt',
 				httpget = true,	-- should be of default, set it here to check that it actually works.
 				writefunction = true,	-- means that we just want the whole response, not interested in its chunks.
@@ -257,6 +259,8 @@ local function aws_puturl (url, payload)
 				url = url,	-- use here the URL received in the previous call.
 				verbose = true,
 				header = false,
+				verifypeer = true,
+				verifyhost = true,
 				readfunction = curl.chunked(payload, C),
 				upload = true,
 				infilesize = #payload,
@@ -280,16 +284,18 @@ end
 local function aws_getcontent (url) 
 
 	return function (cu)
-	
+
 		local returns, getinfos = curl.curl_easy_httpheader_setopt_getinfo {
-			httpheader	= { 
-				['Content-Type'] = 'application/octet-stream',
-			},
+			--httpheader	= { 
+			--	['Content-Type'] = 'application/octet-stream',
+			--},
 			setopt		= {	
 				url = url,
 				verbose = true,
 				header = false,
 				httpget = true,
+				verifypeer = true,
+				verifyhost = true,
 				cainfo = 'curl-ca-bundle.crt',
 				writefunction = true,
 			},
@@ -342,7 +348,7 @@ local url = curl.curl_easy_do(
 				{ fileName='test.txt', fileType='application/octet-stream' }))
 
 print('\n**PUT**\n')
-print(url)
+
 curl.curl_easy_do(aws_puturl(url, 'Hello, World!'))
 
 local response = curl.curl_easy_do(aws_getcontent(url))

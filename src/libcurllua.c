@@ -97,6 +97,30 @@ static int l_curl_easy_setopt_post(lua_State *L) {
 	return 1;
 }
 
+static int l_curl_easy_setopt_verifyhost(lua_State *L) {
+	
+	CURL *curl = (CURL *)lua_touserdata(L, -2);
+	int post = lua_toboolean(L, -1);
+
+	CURLcode code =	curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, post);
+
+	lua_pushinteger(L, code);
+
+	return 1;
+}
+
+static int l_curl_easy_setopt_verifypeer(lua_State *L) {
+	
+	CURL *curl = (CURL *)lua_touserdata(L, -2);
+	int post = lua_toboolean(L, -1);
+
+	CURLcode code =	curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, post);
+
+	lua_pushinteger(L, code);
+
+	return 1;
+}
+
 static int l_curl_easy_setopt_httpget(lua_State *L) {
 	
 	CURL *curl = (CURL *)lua_touserdata(L, -2);
@@ -597,6 +621,8 @@ static const struct luaL_Reg libcurl [] = {
 	{"curl_easy_setopt_header", l_curl_easy_setopt_header},
 	{"curl_easy_setopt_netrc", l_curl_easy_setopt_netrc},
 	{"curl_easy_setopt_post", l_curl_easy_setopt_post},
+	{"curl_easy_setopt_verifyhost", l_curl_easy_setopt_verifyhost},
+	{"curl_easy_setopt_verifypeer", l_curl_easy_setopt_verifypeer},
 	{"curl_easy_setopt_upload", l_curl_easy_setopt_upload},
 	{"curl_easy_setopt_upload_buffersize", l_curl_easy_setopt_upload_buffersize},
 	{"curl_easy_setopt_infilesize", l_curl_easy_setopt_infilesize},
