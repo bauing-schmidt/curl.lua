@@ -246,14 +246,14 @@ local function aws_puturl (url, payload)
 	return function (cu)
 	
 		local function C (step, atmost, chunk)  
-			print(string.format('___%d: atmost %d, chunk "%s"', step, atmost, chunk))
+			--print(string.format('___%d: atmost %d, chunk "%s"', step, atmost, chunk))
 		end
 
 		returns, getinfos = curl.curl_easy_httpheader_setopt_getinfo {
 			httpheader	= { 
 				['Content-Type'] = 'text/plain',
 			},
-			setopt		= {	
+			setopt		= {
 				url = url,	-- use here the URL received in the previous call.
 				verbose = true,
 				header = false,
@@ -261,7 +261,6 @@ local function aws_puturl (url, payload)
 				upload = true,
 				infilesize = #payload,
 				cainfo = 'curl-ca-bundle.crt',
-				netrc = curl.opt_netrc.CURL_NETRC_OPTIONAL,
 			},
 			getinfo 	= { 
 				'response_code' 
@@ -278,7 +277,7 @@ local function aws_puturl (url, payload)
 	end	
 end
 
-local function aws_get (url) 
+local function aws_getcontent (url) 
 
 	return function (cu)
 	
@@ -290,6 +289,7 @@ local function aws_get (url)
 				url = url,
 				verbose = true,
 				header = false,
+				httpget = true,
 				cainfo = 'curl-ca-bundle.crt',
 				writefunction = true,
 			}
@@ -336,9 +336,10 @@ local url = curl.curl_easy_do(
 
 print('\n**PUT**\n')
 
-local url = curl.curl_easy_do(aws_puturl(url, 'Hello, World!'))
---local response = curl.curl_easy_do(aws_get(url))
---print(response)
+curl.curl_easy_do(aws_puturl(url, 'Hello, World!'))
+
+local response = curl.curl_easy_do(aws_getcontent(url))
+print('___: '..response)
 
 
 --------------------------------------------------------------------------------
