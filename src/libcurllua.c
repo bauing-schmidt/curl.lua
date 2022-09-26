@@ -496,7 +496,7 @@ static int l_curl_easy_setopt_readfunction_string(lua_State *L) {
 
 	struct memory *mem = (struct memory *) malloc( sizeof( struct memory ));
 	mem->L = L;
-	mem->size = strlen(str) + 1;
+	mem->size = strlen(str);
 	mem->response = (char *) malloc (sizeof(char) * mem->size);
 	strcpy(mem->response, str);	// need to copy because Lua reclaims its string.
 

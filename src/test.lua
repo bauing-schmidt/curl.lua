@@ -353,11 +353,11 @@ local url = curl.curl_easy_do(
 
 local content = 'Hello, World! hello'
 
-curl.curl_easy_do(aws_puturl(url, content))
+curl.curl_easy_do(aws_puturl(url, content))	-- PUT request.
 
 local questionmark_index = string.find(url, '?', 1, false)
-local url_prefix = string.sub(url, 1, questionmark_index - 1)
-local response = curl.curl_easy_do(aws_getcontent(url_prefix))
+local url_prefix = string.sub(url, 1, questionmark_index - 1)	-- discard the parameters from the whole url.
+local response = curl.curl_easy_do(aws_getcontent(url_prefix))	-- GET request.
 
 assert(response == content)	-- final check: ensure that the content has been transferred correctly.
 
