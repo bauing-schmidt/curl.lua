@@ -462,23 +462,29 @@ size_t read_callback_string(char *ptr, size_t size, size_t nmemb, void *userdata
 {
 	assert(size == 1);
 
-	struct memory *mem = (struct memory *)userdata;
+	lua_State *L = (lua_State *)userdata;
+	const char *response = lua_tostring(L, -2);
+	int len = lua_tointeger(L, -1);
 
-	size_t n = mem->size;
+	lua_pop(L, 2);	// remove the size from the stack.
+
+	size_t n = len;
 
 	if (n > 0) {
 
-		n = mem->size < nmemb ? mem->size : nmemb;
+		n = n < nmemb ? n : nmemb;
 
-		char *copied = strncpy(ptr, mem->response, n);
+		char *copied = strncpy(ptr, response, n);
 
 		assert(copied == ptr);	// according to the documentation
 
-		mem->response = mem->response + n;
-		mem->size = mem->size - n;
+		lua_pushlightuserdata(L, (void *)(response + n));
+		lua_pushinteger(L, len - n);
 
 	} else {
 		n = 0;	// to protect against negative values.
+		lua_pop(L, 2);	// pop both the reference to the original state and string.
+		assert(lua_gettop(L) == 0);	// ensure the cleaning.
 	}
 
 	printf("readfunction_string: asked for %d of %d: %s\n", (int)n, (int)nmemb, ptr);
@@ -491,20 +497,22 @@ static int l_curl_easy_setopt_readfunction_string(lua_State *L) {
 	
 	CURL *curl = (CURL *)lua_touserdata(L, -2);
 	const char *str = lua_tostring(L, -1);
+	int size = strlen(str);
+
+	lua_State *S = lua_newthread (L); // such a new thread is pushed on L also.
+	lua_pushlightuserdata(S, (void *) L); // put the current state itself.
+	lua_pushvalue(L, -2);	// duplicate the reference to the given string.
+	lua_pushvalue(L, -1);	// put two copies, the first to stop the gc and the second is the working one.
+	lua_xmove(L, S, 2);	// then save the doubled reference to the helper state.
+	lua_pushinteger(S, size);	// also put on the auxiliary state the size of the string.
 
 	CURLcode code = curl_easy_setopt(curl, CURLOPT_READFUNCTION, read_callback_string);
 
-	struct memory *mem = (struct memory *) malloc( sizeof( struct memory ));
-	mem->L = L;
-	mem->size = strlen(str);
-	mem->response = (char *) malloc (sizeof(char) * mem->size);
-	strcpy(mem->response, str);	// need to copy because Lua reclaims its string.
-
-	CURLcode ccode = curl_easy_setopt(curl, CURLOPT_READDATA,  mem);
+	CURLcode ccode = curl_easy_setopt(curl, CURLOPT_READDATA,  S);
 	assert(ccode == 0);
 	
 	lua_pushinteger(L, code);
-	lua_pushlightuserdata(L, mem);
+	lua_pushlightuserdata(L, S);	// now we return the reference to the new `thread`.
 	
 	return 2;
 }
@@ -589,6 +597,13 @@ static int l_libc_free(lua_State *L) {
 	return 0;
 }
 
+static int l_liblua_lua_close(lua_State *L) {
+	lua_State *S = (lua_State *)lua_touserdata(L, -1);
+	lua_close(S);
+
+	return 0;
+}
+
 static int l_libc_fclose(lua_State *L) {
 	FILE *p = (FILE *) lua_touserdata(L, -1);
 	int r = fclose(p);
@@ -654,6 +669,7 @@ static const struct luaL_Reg libcurl [] = {
 	{"curl_easy_unescape", l_curl_easy_unescape},
 	{"libc_free", l_libc_free},
 	{"libc_fclose", l_libc_fclose},
+	{"liblua_lua_close", l_liblua_lua_close},
 	{"curl_free", l_curl_free},
 	{"test", l_test},
 	{"test_func", l_test_func},

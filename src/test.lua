@@ -185,7 +185,7 @@ local function apptivegrid_upload_1 (cu, entity_json)
 			netrc = curl.opt_netrc.CURL_NETRC_OPTIONAL,
 		},
 		getinfo 	= { 
-			'response_code' 
+			response_code = true, 
 		}
 	} (cu)
 	
@@ -271,7 +271,7 @@ local function aws_puturl (url, payload)
 				cainfo = 'curl-ca-bundle.crt',
 			},
 			getinfo 	= { 
-				'response_code'
+				response_code = true,
 			}
 		} (cu)
 		
@@ -304,7 +304,7 @@ local function aws_getcontent (url)
 				writefunction = true,
 			},
 			getinfo 	= { 
-				'response_code' 
+				response_code = true,
 			}
 		} (cu)
 

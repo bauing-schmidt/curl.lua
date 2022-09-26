@@ -168,11 +168,13 @@ function curl.curl_easy_getinfo(cu, tbl)
 
 	local getinfos = {}
 			
-	for _, k in ipairs(tbl) do
-		local getinfo_k = curl['curl_easy_getinfo_' .. k]
-		if type(getinfo_k) == 'function' then
-			local r = table.pack(getinfo_k(cu))
-			getinfos[k] = function () return table.unpack(r) end
+	for k, enabled in pairs(tbl) do
+		if enabled then
+			local getinfo_k = curl['curl_easy_getinfo_' .. k]
+			if type(getinfo_k) == 'function' then
+				local r = table.pack(getinfo_k(cu))
+				getinfos[k] = function () return table.unpack(r) end
+			end
 		end
 	end
 	
@@ -235,10 +237,10 @@ function curl.curl_easy_httpheader_setopt_getinfo (tbl)
 		end
 
 		if type(returns.readfunction_string) == 'function' then
-			local code, memory = returns.readfunction_string()
+			local code, thread = returns.readfunction_string()
 			assert(code == curl.CURLcode.CURLE_OK)
-			curl.libc_free(memory)
-
+			thread = nil	-- release the pointer to the auxiliary thread
+			
 			function returns.readfunction_string () return code, nil, nil end
 		end
 
