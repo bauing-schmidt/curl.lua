@@ -262,8 +262,8 @@ local function aws_puturl (url, payload)
 				ssl_verifypeer = true,
 				ssl_verifyhost = true,
 				--readfunction = curl.chunked(payload, C),
-				readfunction_filename = "/home/mn/test.txt",
-				--readfunction_string = payload,
+				--readfunction_filename = "/home/mn/test.txt",
+				readfunction_string = payload,
 				post = false,
 				httpget = false,
 				upload = true,
@@ -275,7 +275,7 @@ local function aws_puturl (url, payload)
 			}
 		} (cu)
 		
-		local code = returns.readfunction_filename()
+		local code = returns.readfunction_string()
 		assert(code == curl.CURLcode.CURLE_OK)
 
 		local code, response_code = getinfos.response_code()
@@ -313,7 +313,7 @@ local function aws_getcontent (url)
 
 		local code, response_code = getinfos.response_code()
 		assert(code == curl.CURLcode.CURLE_OK)
-		assert(response_code == 403)
+		assert(response_code == 200)
 		
 		return response
 
@@ -351,12 +351,15 @@ local url = curl.curl_easy_do(
 	aws_geturl(	'https://7zzn3khlt1.execute-api.eu-central-1.amazonaws.com/uploads',
 				{ fileName='test.txt', fileType='application/octet-stream' }))
 
-print('\n**PUT**\n')
+local content = 'Hello, World! hello'
 
-curl.curl_easy_do(aws_puturl(url, 'Hello, World!'))
+curl.curl_easy_do(aws_puturl(url, content))
 
-local response = curl.curl_easy_do(aws_getcontent(url))
---print('___: '..response)
+local questionmark_index = string.find(url, '?', 1, false)
+local url_prefix = string.sub(url, 1, questionmark_index - 1)
+local response = curl.curl_easy_do(aws_getcontent(url_prefix))
+
+assert(response == content)	-- final check: ensure that the content has been transferred correctly.
 
 --------------------------------------------------------------------------------
 

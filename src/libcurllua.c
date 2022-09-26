@@ -481,7 +481,7 @@ size_t read_callback_string(char *ptr, size_t size, size_t nmemb, void *userdata
 		n = 0;	// to protect against negative values.
 	}
 
-	printf("_______________________________________-asked for %d of %d: %s\n", (int)n, (int)nmemb, ptr);
+	printf("readfunction_string: asked for %d of %d: %s\n", (int)n, (int)nmemb, ptr);
 	fflush(stdout);
 
 	return n;
