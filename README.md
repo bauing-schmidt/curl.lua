@@ -38,3 +38,23 @@ It is mandatory to compile with `make`, according to the following dep
 sudo apt-get install libcurl4-gnutls-dev
 ```
 and, of course, to Lua (https://www.lua.org/). After that step, please also install with `sudo make install`.
+
+### Test
+
+Some examples of usage can be found in the [`test`](https://github.com/massimo-nocentini/libcurl.lua/tree/master/test) subdirectory. For the sake of example, here is a very simple interaction,
+```lua
+local code
+
+code = curl.curl_easy_setopt_url(cu, 'https://www.google.com')
+assert(code == curl.CURLcode.CURLE_OK)
+
+code = curl.curl_easy_setopt_verbose(cu, true)
+assert(code == curl.CURLcode.CURLE_OK)
+
+code = curl.curl_easy_setopt_cainfo(cu, 'curl-ca-bundle.crt')
+assert(code == curl.CURLcode.CURLE_OK)
+
+code = curl.curl_easy_perform(cu)
+assert(code == curl.CURLcode.CURLE_OK)
+```
+that requests the Google's home page.
