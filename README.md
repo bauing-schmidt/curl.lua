@@ -22,7 +22,8 @@ see https://curl.se/libcurl/c/CURLOPT_READFUNCTION.html to understand such optio
 
 ### `src/curl.lua`
 
-This repository provides the `curl` Lua module which offers the following functions:
+The `curl` Lua module offers the following functions:
+
 - `curl.curl_easy_do(handler)`, that ensures a correct allocation and free of the C handle;
 - `curl.curl_slist(tbl)`, that buils `curl` lists (for headers as example);
 - `curl.curl_easy_setopt(cu, tbl)`, that sets options for the next request;
