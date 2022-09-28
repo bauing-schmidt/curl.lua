@@ -56,14 +56,13 @@ local function apptivegrid (cu)
 				httpheader = headers,
 			})
 
-			local code, memory = curl.curl_easy_setopt_writefunction(cu, true)
+			local code, thread = curl.curl_easy_setopt_writefunction(cu, true)
 			assert(code == curl.CURLcode.CURLE_OK)
 
 			code = curl.curl_easy_perform(cu)
 			assert(code == curl.CURLcode.CURLE_OK)
 
-			local response = curl.curl_easy_getopt_writedata(memory)
-			--curl.libc_free(memory)
+			local response, size = curl.curl_easy_getopt_writedata(thread)
 			
 			print('\n'..response)
 		end)
