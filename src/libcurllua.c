@@ -323,12 +323,16 @@ static size_t cb1(void *data, size_t size, size_t nmemb, void *userp)
 {
 	size_t realsize = cb(data, size, nmemb, userp);
 
-	struct memory *mem = (struct memory *)userp;
+	if (realsize == 0) return realsize;	// propagate the error in case.
 
-	lua_State *L = (lua_State *) lua_touserdata(mem->L, -2);
-	lua_pushvalue(mem->L, -1);	// duplicate the callback function for repeated applications of it.
-	lua_xmove(mem->L, L, 1);
-	lua_pushstring(L, mem->response);
+	lua_State *S = (lua_State *)userp;
+
+	const char *response = lua_tostring(S, -2);
+
+	lua_State *L = (lua_State *) lua_touserdata(S, -4);
+	lua_pushvalue(S, -3);	// duplicate the callback function for repeated applications of it.
+	lua_xmove(S, L, 1);
+	lua_pushstring(L, response);
 	lua_pushinteger(L, realsize);
 	lua_call(L, 2, 0);
 
@@ -345,9 +349,9 @@ static int l_curl_easy_setopt_writefunction(lua_State *L) {
 	CURLcode code;
 	
 	if (isfunction == 1) {
-		lua_pushlightuserdata(S, (void *) L); // put the current state itself
+		lua_pushlightuserdata(L, L); // put the current state itself
 		lua_pushvalue(L, -2);	// duplicate the given function
-		lua_xmove(L, S, 1);	// then save the doubled reference to the helper state.
+		lua_xmove(L, S, 2);	// then save the doubled reference to the helper state.
 		
 		code =	curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, cb1);
 	} else {
@@ -520,12 +524,20 @@ static int l_curl_easy_getopt_writedata(lua_State *L) {
 
 	lua_pop(S, 2);
 
+	if(lua_gettop(S) == 2) {
+		assert(lua_isfunction(S, -1));
+		assert(lua_islightuserdata(S, -2));
+		lua_pop(S, 2);
+	}
+
 	assert(lua_gettop(S) == 0);
 
 	lua_close(S);
 
 	lua_pushstring(L, response);
 	lua_pushinteger(L, size);
+
+	free((void *)response);	// we can release the memory because Lua interns its own copy of `response`.
 
 	return 2;
 }
