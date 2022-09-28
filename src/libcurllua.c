@@ -322,14 +322,18 @@ static size_t cb(void *data, size_t unarysize, size_t nmemb, void *userp)
 static size_t cb1(void *data, size_t size, size_t nmemb, void *userp)
 {
 	size_t realsize = cb(data, size, nmemb, userp);
-
+	
 	if (realsize == 0) return realsize;	// propagate the error in case.
 
 	lua_State *S = (lua_State *)userp;
 
-	const char *response = lua_tostring(S, -2);
+	assert(lua_gettop(S) == 4);
 
-	lua_State *L = (lua_State *) lua_touserdata(S, -4);
+	const char *response = (const char *)lua_touserdata(S, -2);
+
+	lua_State *L = (lua_State *)lua_touserdata(S, -4);
+	assert(L != NULL);
+
 	lua_pushvalue(S, -3);	// duplicate the callback function for repeated applications of it.
 	lua_xmove(S, L, 1);
 	lua_pushstring(L, response);
@@ -522,8 +526,6 @@ static int l_curl_easy_setopt_readfunction_string(lua_State *L) {
 static int l_curl_easy_getopt_writedata(lua_State *L) {
 
 	lua_State *S = lua_tothread(L, -1);
-
-	assert(lua_gettop(S) == 2);
 	
 	void *response = lua_touserdata(S, -2);
 	lua_Integer size = lua_tointeger(S, -1);

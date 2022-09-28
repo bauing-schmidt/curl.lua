@@ -63,7 +63,8 @@ local function apptivegrid (cu)
 			assert(code == curl.CURLcode.CURLE_OK)
 
 			local response, size = curl.curl_easy_getopt_writedata(thread)
-			
+			thread = nil	-- let the GC to reclaim that (empty) thread
+
 			print('\n'..response)
 		end)
 
@@ -101,6 +102,7 @@ local function apptivegrid1 (cu)
 	assert(code == curl.CURLcode.CURLE_OK)
 
 	local response, size = curl.curl_easy_getopt_writedata(thread)
+	thread = nil	-- let the GC to reclaim that (empty) thread
 	
 	curl.curl_slist_free_all(headers)
 	
@@ -340,8 +342,8 @@ print('cURL version: ' .. curl.curl_version() .. '\n')
 
 --curl.curl_easy_do(G)
 --curl.curl_easy_do(apptivegrid_plain)
-curl.curl_easy_do(apptivegrid)
---curl.curl_easy_do(apptivegrid1)
+--curl.curl_easy_do(apptivegrid)
+curl.curl_easy_do(apptivegrid1)
 --curl.curl_easy_do(apptivegrid2)
 --curl.curl_easy_do(function (cu) apptivegrid_upload(cu, entity_json) end)
 --curl.curl_easy_do(function (cu) apptivegrid_upload_1(cu, entity_json) end)
