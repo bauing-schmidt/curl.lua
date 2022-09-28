@@ -198,9 +198,9 @@ function curl.curl_easy_httpheader_setopt_getinfo (tbl)
 		local returns = curl.curl_easy_setopt(cu, setopt_tbl)
 
 		local has_writefunction = type(returns.writefunction) == 'function'	-- because we use thunks to get results
-		local code, memory, thread
+		local code, thread
 		if has_writefunction then
-			code, memory, thread = returns.writefunction()
+			code, thread = returns.writefunction()
 			assert(code == curl.CURLcode.CURLE_OK)
 		end
 
@@ -210,10 +210,7 @@ function curl.curl_easy_httpheader_setopt_getinfo (tbl)
 		curl.curl_slist_free_all(headers)	-- release the memory for headers.
 
 		if has_writefunction then
-			local response, size = curl.curl_easy_getopt_writedata(memory)
-			
-			thread = nil	-- allows the GC to reclaim the working thread.
-			curl.libc_free(memory)
+			local response, size = curl.curl_easy_getopt_writedata(thread)
 			
 			assert(#response == size)
 			function returns.writefunction () return code, response, size end

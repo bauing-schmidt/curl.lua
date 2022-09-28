@@ -349,9 +349,9 @@ static int l_curl_easy_setopt_writefunction(lua_State *L) {
 	CURLcode code;
 	
 	if (isfunction == 1) {
-		lua_pushlightuserdata(L, L); // put the current state itself
+		lua_pushlightuserdata(S, L); // put the current state itself
 		lua_pushvalue(L, -2);	// duplicate the given function
-		lua_xmove(L, S, 2);	// then save the doubled reference to the helper state.
+		lua_xmove(L, S, 1);	// then save the doubled reference to the helper state.
 		
 		code =	curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, cb1);
 	} else {
@@ -368,6 +368,9 @@ static int l_curl_easy_setopt_writefunction(lua_State *L) {
 	
 	lua_pushvalue(L, -2);	// duplicate the working thread
 	lua_remove(L, -3);	// cleanup a doubled value
+
+	assert(lua_isinteger(L, -2));
+	assert(lua_isthread(L, -1));
 
 	return 2;
 }
@@ -517,9 +520,12 @@ static int l_curl_easy_setopt_readfunction_string(lua_State *L) {
 }
 
 static int l_curl_easy_getopt_writedata(lua_State *L) {
+
+	lua_State *S = lua_tothread(L, -1);
+
+	assert(lua_gettop(S) == 2);
 	
-	lua_State *S = (lua_State *)lua_touserdata(L, -1);
-	const char *response = lua_tostring(S, -2);
+	void *response = lua_touserdata(S, -2);
 	lua_Integer size = lua_tointeger(S, -1);
 
 	lua_pop(S, 2);
@@ -532,12 +538,10 @@ static int l_curl_easy_getopt_writedata(lua_State *L) {
 
 	assert(lua_gettop(S) == 0);
 
-	lua_close(S);
-
-	lua_pushstring(L, response);
+	lua_pushstring(L, (const char *)response);
 	lua_pushinteger(L, size);
 
-	free((void *)response);	// we can release the memory because Lua interns its own copy of `response`.
+	free(response);	// we can release the memory because Lua interns its own copy of `response`.
 
 	return 2;
 }
