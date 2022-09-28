@@ -56,14 +56,14 @@ local function apptivegrid (cu)
 				httpheader = headers,
 			})
 
-			local code, memory = curl.curl_easy_setopt_writefunction(cu, nil)
+			local code, memory = curl.curl_easy_setopt_writefunction(cu, true)
 			assert(code == curl.CURLcode.CURLE_OK)
 
 			code = curl.curl_easy_perform(cu)
 			assert(code == curl.CURLcode.CURLE_OK)
 
 			local response = curl.curl_easy_getopt_writedata(memory)
-			curl.libc_free(memory)
+			--curl.libc_free(memory)
 			
 			print('\n'..response)
 		end)
@@ -212,6 +212,7 @@ local function aws_geturl (url_head, params_tbl)
 		do a PUT request at `v` and then a GET to get back the file.
 		]]--
 
+		print 'before setting options'
 		local returns, getinfos = curl.curl_easy_httpheader_setopt_getinfo {
 			httpheader	= { 
 				['Content-Type'] = 'application/json',
@@ -227,6 +228,8 @@ local function aws_geturl (url_head, params_tbl)
 				writefunction = true,	-- means that we just want the whole response, not interested in its chunks.
 			}
 		} (cu)
+
+		print 'set options'
 
 		local code, response, size = returns.writefunction()
 		assert(code == curl.CURLcode.CURLE_OK)
@@ -341,17 +344,19 @@ print('cURL version: ' .. curl.curl_version() .. '\n')
 
 --curl.curl_easy_do(G)
 --curl.curl_easy_do(apptivegrid_plain)
---curl.curl_easy_do(apptivegrid)
+curl.curl_easy_do(apptivegrid)
 --curl.curl_easy_do(apptivegrid1)
 --curl.curl_easy_do(apptivegrid2)
 --curl.curl_easy_do(function (cu) apptivegrid_upload(cu, entity_json) end)
 --curl.curl_easy_do(function (cu) apptivegrid_upload_1(cu, entity_json) end)
 
+--[[
+local content = 'Hello, World! hello'
 local url = curl.curl_easy_do(
 	aws_geturl(	'https://7zzn3khlt1.execute-api.eu-central-1.amazonaws.com/uploads',
 				{ fileName='test.txt', fileType='application/octet-stream' }))
 
-local content = 'Hello, World! hello'
+				--[[
 
 curl.curl_easy_do(aws_puturl(url, content))	-- PUT request.
 

@@ -114,10 +114,10 @@ curl.CURLcode = {
 }
 
 function curl.curl_easy_do(handler)
-	local cu = libcurl.curl_easy_init()
+	local cu = curl.curl_easy_init()
 	local res, v = pcall(handler, cu)
 	assert(res)
-	libcurl.curl_easy_cleanup(cu)
+	curl.curl_easy_cleanup(cu)
 	return v
 end
 
