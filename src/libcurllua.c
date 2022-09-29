@@ -11,12 +11,6 @@
 #include <lauxlib.h>
 #include <curl/curl.h>
 
-struct memory {
-	lua_State *L;
-	char *response;
-	size_t size;
-};
-
 /* CURL *curl_easy_init(void); */
 static int l_curl_easy_init(lua_State *L) {
 	
@@ -383,17 +377,28 @@ size_t read_callback(char *buffer, size_t size, size_t nitems, void *userdata) {
 
 	assert(size == 1); // according to the documentation.
 
-	struct memory *mem = (struct memory *)userdata;
+	lua_State *S = (lua_State *)userdata;
 
-	lua_State *L = (lua_State *) lua_touserdata(mem->L, -2);
-	lua_pushvalue(mem->L, -1);	// duplicate the callback function for repeated applications of it.
-	lua_xmove(mem->L, L, 1);
-	lua_pushinteger(L, size * nitems-1);
+	assert(lua_gettop(S) == 2);
+
+	lua_State *L = (lua_State *) lua_touserdata(S, -2);
+	assert(L != NULL);
+
+	lua_pushvalue(S, -1);	// duplicate the callback function for repeated applications of it.
+	lua_xmove(S, L, 1);
+	lua_pushinteger(L, nitems);
 	lua_call(L, 1, 1);
 	const char *substr = lua_tostring(L, -1);
 	lua_pop(L, 1);
-	strcpy(buffer, substr);
-	return strlen(substr);
+	
+	size_t len = strlen(substr);
+	
+	if (len > 0) {
+		strcpy(buffer, substr);
+		len++;	// because `strcpy` also copies the \0 character.
+	}
+
+	return len;
 
 }
 
@@ -406,27 +411,21 @@ static int l_curl_easy_setopt_readfunction(lua_State *L) {
 	CURLcode code;
 	
 	S = lua_newthread (L); // such a new thread is pushed on L also.
-	lua_pushlightuserdata(S, (void *) L); // put the current state itself
+	lua_pushlightuserdata(S, L); // put the current state itself
 	lua_pushvalue(L, -2);	// duplicate the given function
 	lua_xmove(L, S, 1);	// then save the doubled reference to the helper state.
 	
 	code = curl_easy_setopt(curl, CURLOPT_READFUNCTION, read_callback);
 	
-	struct memory *mem = (struct memory *) malloc( sizeof( struct memory ));
-	mem->L = S;
-	mem->response = NULL;
-	mem->size = 0;
-	
-	CURLcode ccode = curl_easy_setopt(curl, CURLOPT_READDATA,  mem);
+	CURLcode ccode = curl_easy_setopt(curl, CURLOPT_READDATA,  S);
 	assert(ccode == 0);
 	
 	lua_pushinteger(L, code);
-	lua_pushlightuserdata(L, mem);
 	
-	lua_pushvalue(L, -3);	// duplicate the working thread
-	lua_remove(L, -4);	// cleanup a doubled value
+	lua_pushvalue(L, -2);	// duplicate the working thread
+	lua_remove(L, -3);		// cleanup a doubled value
 
-	return 3;
+	return 2;
 }
 
 size_t read_callback_filename(char *ptr, size_t size, size_t nmemb, void *userdata)

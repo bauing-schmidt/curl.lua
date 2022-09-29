@@ -215,12 +215,12 @@ function curl.curl_easy_httpheader_setopt_getinfo (tbl)
 		end
 
 		if type(returns.readfunction) == 'function' then
-			local code, memory, thread = returns.readfunction()
+			local code, thread = returns.readfunction()
 			assert(code == curl.CURLcode.CURLE_OK)
-			curl.libc_free(memory)
+
 			thread = nil
 
-			function returns.readfunction () return code, nil, nil end
+			function returns.readfunction () return code end
 		end
 
 		if type(returns.readfunction_filename) == 'function' then
@@ -228,7 +228,7 @@ function curl.curl_easy_httpheader_setopt_getinfo (tbl)
 			assert(code == curl.CURLcode.CURLE_OK)
 			curl.libc_fclose(file)
 
-			function returns.readfunction_filename () return code, nil, nil end
+			function returns.readfunction_filename () return code end
 		end
 
 		if type(returns.readfunction_string) == 'function' then
@@ -236,7 +236,7 @@ function curl.curl_easy_httpheader_setopt_getinfo (tbl)
 			assert(code == curl.CURLcode.CURLE_OK)
 			thread = nil	-- release the pointer to the auxiliary thread
 			
-			function returns.readfunction_string () return code, nil, nil end
+			function returns.readfunction_string () return code end
 		end
 
 		local getinfos = curl.curl_easy_getinfo(cu, getinfo_tbl)
@@ -252,6 +252,7 @@ function curl.chunked (str, callback)
 	local step = 1
 
 	return function (atmost)
+		
 		local chunk = string.sub(str, i, i + atmost - 1)
 
 		callback(step, atmost, chunk)	-- just inform about the current chunk.

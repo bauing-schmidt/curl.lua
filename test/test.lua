@@ -249,7 +249,7 @@ local function aws_puturl (url, payload)
 	return function (cu)
 	
 		local function C (step, atmost, chunk)
-			--print(string.format('___%d: atmost %d, chunk "%s"', step, atmost, chunk))
+			print(string.format('___%d: atmost %d, chunk "%s"', step, atmost, chunk))
 		end
 
 		returns, getinfos = curl.curl_easy_httpheader_setopt_getinfo {
@@ -262,9 +262,9 @@ local function aws_puturl (url, payload)
 				header = false,
 				ssl_verifypeer = true,
 				ssl_verifyhost = true,
-				--readfunction = curl.chunked(payload, C),
+				readfunction = curl.chunked(payload, C),
 				--readfunction_filename = "/home/mn/test.txt",
-				readfunction_string = payload,
+				--readfunction_string = payload,
 				post = false,
 				httpget = false,
 				upload = true,
@@ -276,7 +276,7 @@ local function aws_puturl (url, payload)
 			}
 		} (cu)
 		
-		local code = returns.readfunction_string()
+		local code = returns.readfunction()
 		assert(code == curl.CURLcode.CURLE_OK)
 
 		local code, response_code = getinfos.response_code()
@@ -355,7 +355,7 @@ local url = curl.curl_easy_do(	-- Initial GET request.
 	aws_geturl(	'https://7zzn3khlt1.execute-api.eu-central-1.amazonaws.com/uploads',
 				{ fileName='test.txt', fileType='application/octet-stream' }))
 
-curl.curl_easy_do(aws_puturl(url, content))	-- PUT request.
+curl.curl_easy_do(aws_puturl(url, content))	-- PUT request. 
 
 local questionmark_index = string.find(url, '?', 1, false)
 local url_prefix = string.sub(url, 1, questionmark_index - 1)	-- discard the parameters from the whole url.
@@ -366,6 +366,7 @@ assert(response == content)	-- final check: ensure that the content has been tra
 --------------------------------------------------------------------------------
 
 print('\nBye.')
+
 
 --[[
 local S = curl.test(42)
