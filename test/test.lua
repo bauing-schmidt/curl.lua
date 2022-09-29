@@ -343,18 +343,17 @@ print('cURL version: ' .. curl.curl_version() .. '\n')
 --curl.curl_easy_do(G)
 --curl.curl_easy_do(apptivegrid_plain)
 --curl.curl_easy_do(apptivegrid)
-curl.curl_easy_do(apptivegrid1)
+--curl.curl_easy_do(apptivegrid1)
 --curl.curl_easy_do(apptivegrid2)
 --curl.curl_easy_do(function (cu) apptivegrid_upload(cu, entity_json) end)
 --curl.curl_easy_do(function (cu) apptivegrid_upload_1(cu, entity_json) end)
 
---[[
+---[[
 local content = 'Hello, World! hello'
-local url = curl.curl_easy_do(
+
+local url = curl.curl_easy_do(	-- Initial GET request.
 	aws_geturl(	'https://7zzn3khlt1.execute-api.eu-central-1.amazonaws.com/uploads',
 				{ fileName='test.txt', fileType='application/octet-stream' }))
-
-				--[[
 
 curl.curl_easy_do(aws_puturl(url, content))	-- PUT request.
 
