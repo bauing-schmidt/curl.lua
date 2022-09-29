@@ -9,7 +9,12 @@
 #include <assert.h>
 #include <lua.h>
 #include <lauxlib.h>
-#include <curl/curl.h>
+#ifdef __linux__ 
+    //linux code goes here
+	#include <curl/curl.h>
+#else
+	#include <curl\curl.h>
+#endif
 
 /* CURL *curl_easy_init(void); */
 static int l_curl_easy_init(lua_State *L) {
