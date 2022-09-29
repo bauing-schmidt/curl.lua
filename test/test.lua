@@ -56,15 +56,15 @@ local function apptivegrid (cu)
 				httpheader = headers,
 			})
 
-			local code, memory = curl.curl_easy_setopt_writefunction(cu, true)
+			local code, thread = curl.curl_easy_setopt_writefunction(cu, true)
 			assert(code == curl.CURLcode.CURLE_OK)
 
 			code = curl.curl_easy_perform(cu)
 			assert(code == curl.CURLcode.CURLE_OK)
 
-			local response = curl.curl_easy_getopt_writedata(memory)
-			--curl.libc_free(memory)
-			
+			local response, size = curl.curl_easy_getopt_writedata(thread)
+			thread = nil	-- let the GC to reclaim that (empty) thread
+
 			print('\n'..response)
 		end)
 
@@ -95,18 +95,16 @@ local function apptivegrid1 (cu)
 		writefunction = logger,
 	})
 
-	local code, memory, thread = returns.writefunction()
+	local code, thread = returns.writefunction()
 	assert(code == curl.CURLcode.CURLE_OK)
 
 	code = curl.curl_easy_perform(cu) -- go!
 	assert(code == curl.CURLcode.CURLE_OK)
 
-	local response, size = curl.curl_easy_getopt_writedata(memory)
+	local response, size = curl.curl_easy_getopt_writedata(thread)
+	thread = nil	-- let the GC to reclaim that (empty) thread
 	
-	curl.libc_free(memory)
 	curl.curl_slist_free_all(headers)
-	
-	thread = nil	-- allows the GC to reclaim the working thread.
 	
 	assert(#response == amount and amount == size)	-- cumulated size has to equal the actual size.
 	print('\n'..response)
@@ -251,7 +249,7 @@ local function aws_puturl (url, payload)
 	return function (cu)
 	
 		local function C (step, atmost, chunk)
-			--print(string.format('___%d: atmost %d, chunk "%s"', step, atmost, chunk))
+			print(string.format('___%d: atmost %d, chunk "%s"', step, atmost, chunk))
 		end
 
 		returns, getinfos = curl.curl_easy_httpheader_setopt_getinfo {
@@ -344,21 +342,20 @@ print('cURL version: ' .. curl.curl_version() .. '\n')
 
 --curl.curl_easy_do(G)
 --curl.curl_easy_do(apptivegrid_plain)
-curl.curl_easy_do(apptivegrid)
+--curl.curl_easy_do(apptivegrid)
 --curl.curl_easy_do(apptivegrid1)
 --curl.curl_easy_do(apptivegrid2)
 --curl.curl_easy_do(function (cu) apptivegrid_upload(cu, entity_json) end)
 --curl.curl_easy_do(function (cu) apptivegrid_upload_1(cu, entity_json) end)
 
---[[
+---[[
 local content = 'Hello, World! hello'
-local url = curl.curl_easy_do(
+
+local url = curl.curl_easy_do(	-- Initial GET request.
 	aws_geturl(	'https://7zzn3khlt1.execute-api.eu-central-1.amazonaws.com/uploads',
 				{ fileName='test.txt', fileType='application/octet-stream' }))
 
-				--[[
-
-curl.curl_easy_do(aws_puturl(url, content))	-- PUT request.
+curl.curl_easy_do(aws_puturl(url, content))	-- PUT request. 
 
 local questionmark_index = string.find(url, '?', 1, false)
 local url_prefix = string.sub(url, 1, questionmark_index - 1)	-- discard the parameters from the whole url.
@@ -369,6 +366,7 @@ assert(response == content)	-- final check: ensure that the content has been tra
 --------------------------------------------------------------------------------
 
 print('\nBye.')
+
 
 --[[
 local S = curl.test(42)
