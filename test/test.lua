@@ -262,9 +262,9 @@ local function aws_puturl (url, payload)
 				header = false,
 				ssl_verifypeer = true,
 				ssl_verifyhost = true,
-				readfunction = curl.chunked(payload, C),
+				--readfunction = curl.chunked(payload, C),
 				--readfunction_filename = "/home/mn/test.txt",
-				--readfunction_string = payload,
+				readfunction_string = payload,
 				post = false,
 				httpget = false,
 				upload = true,
@@ -276,7 +276,7 @@ local function aws_puturl (url, payload)
 			}
 		} (cu)
 		
-		local code = returns.readfunction()
+		local code = returns.readfunction_string()
 		assert(code == curl.CURLcode.CURLE_OK)
 
 		local code, response_code = getinfos.response_code()
