@@ -184,7 +184,8 @@ end
 
 function curl.curl_easy_httpheader_setopt_getinfo (tbl)
 
-	local headers_tbl, setopt_tbl, getinfo_tbl = tbl.httpheader, tbl.setopt, tbl.getinfo
+	local headers_tbl, setopt_tbl, getinfo_tbl = 
+		tbl.httpheader, tbl.setopt, tbl.getinfo
 	
 	headers_tbl = headers_tbl or {}
 	setopt_tbl = setopt_tbl or {}
@@ -197,32 +198,29 @@ function curl.curl_easy_httpheader_setopt_getinfo (tbl)
 				
 		local returns = curl.curl_easy_setopt(cu, setopt_tbl)
 
-		local has_writefunction = type(returns.writefunction) == 'function'	-- because we use thunks to get results
-		local code, thread
-		if has_writefunction then
-			code, thread = returns.writefunction()
-			assert(code == curl.CURLcode.CURLE_OK)
-		end
-
 		local pcode = curl.curl_easy_perform(cu) -- go!
 		assert(pcode == curl.CURLcode.CURLE_OK)
 
 		curl.curl_slist_free_all(headers)	-- release the memory for headers.
 
-		if has_writefunction then
+		if type(returns.writefunction) == 'function' then
+			local code, thread = returns.writefunction()
+			assert(code == curl.CURLcode.CURLE_OK)
+		
 			local response, size = curl.curl_easy_getopt_writedata(thread)
-			
+			thread = nil	-- to let the GC to reclaim such thread.
+
 			assert(#response == size)
 			function returns.writefunction () return code, response, size end
 		end
 
 		if type(returns.readfunction) == 'function' then
-			local code, memory, thread = returns.readfunction()
+			local code, thread = returns.readfunction()
 			assert(code == curl.CURLcode.CURLE_OK)
-			curl.libc_free(memory)
+
 			thread = nil
 
-			function returns.readfunction () return code, nil, nil end
+			function returns.readfunction () return code end
 		end
 
 		if type(returns.readfunction_filename) == 'function' then
@@ -230,7 +228,7 @@ function curl.curl_easy_httpheader_setopt_getinfo (tbl)
 			assert(code == curl.CURLcode.CURLE_OK)
 			curl.libc_fclose(file)
 
-			function returns.readfunction_filename () return code, nil, nil end
+			function returns.readfunction_filename () return code end
 		end
 
 		if type(returns.readfunction_string) == 'function' then
@@ -238,7 +236,7 @@ function curl.curl_easy_httpheader_setopt_getinfo (tbl)
 			assert(code == curl.CURLcode.CURLE_OK)
 			thread = nil	-- release the pointer to the auxiliary thread
 			
-			function returns.readfunction_string () return code, nil, nil end
+			function returns.readfunction_string () return code end
 		end
 
 		local getinfos = curl.curl_easy_getinfo(cu, getinfo_tbl)
@@ -254,6 +252,7 @@ function curl.chunked (str, callback)
 	local step = 1
 
 	return function (atmost)
+		
 		local chunk = string.sub(str, i, i + atmost - 1)
 
 		callback(step, atmost, chunk)	-- just inform about the current chunk.
