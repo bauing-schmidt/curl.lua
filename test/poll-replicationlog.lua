@@ -68,7 +68,7 @@ while true do
 
 		  {
 		    "created": "%s-%s-%sT%s:%s:%s+02:00",
-		    "replicationkey": 123,
+		    "replicationkey": %s,
 		    "locationoutgoing": 456,
 		    "locationincoming":789,
 		    "commandurl": [],
@@ -77,7 +77,7 @@ while true do
 		    "errortext": null
 		  }
 
-		]], y, M, d, h, m, s)
+		]], y, M, d, h, m, s, row.cchistoryid)
 		
 		print('Inserting: \n' .. entity_json .. '\n')
 			  
