@@ -17,7 +17,7 @@ local function apptivegrid (cu)
 		},
 		setopt		= {	
 			url = 'https://app.apptivegrid.de/api/users/6315f0a9f5ca3bb794a42cb3/spaces/6315f0b667d3ac2664a44f52/grids/631ee7590cb7e1473fa4c5ee/entities?layout=property',
-			verbose = true,
+			verbose = false,
 			header = false,
 			cainfo = 'curl-ca-bundle.crt',
 			netrc = curl.opt_netrc.CURL_NETRC_OPTIONAL,
@@ -31,28 +31,32 @@ local function apptivegrid (cu)
 	return response
 end
 
-local response = curl.curl_easy_do(apptivegrid)	-- get the json.
-local tbl = json.decode(response)		-- then read it.
+while true do
 
-for _, item in ipairs(tbl.items) do
-	local matcher = string.gmatch(item.created, timestamp_pattern)
-	local y, M, d, h, m, s = matcher()
-	--print(item._id, y, M, d, h, m, s)
-	local createtime = string.format('%s-%s-%s %s:%s:%s.000000', y, M, d, h, m, s)
-	local query_insert = string.format([[
+	os.execute 'sleep 2s'	-- sleeping.
 
-		INSERT INTO pdm.replicationlog(
-			cchistoryid, createtime, applytime, applyduration, command)
-			VALUES (%s, '%s', NULL, NULL, '{}'::jsonb);
+	local response = curl.curl_easy_do(apptivegrid)	-- get the json.
+	local tbl = json.decode(response)		-- then read it.
 
-	]], item.replicationkey, createtime)
+	for _, item in ipairs(tbl.items) do
+		local matcher = string.gmatch(item.created, timestamp_pattern)
+		local y, M, d, h, m, s = matcher()
+		--print(item._id, y, M, d, h, m, s)
+		local createtime = string.format('%s-%s-%s %s:%s:%s.000000', y, M, d, h, m, s)
+		local query_insert = string.format([[
 
-	--print('INSERT: ' .. query_insert)
+			INSERT INTO pdm.replicationlog(
+				cchistoryid, createtime, applytime, applyduration, command)
+				VALUES (%s, '%s', NULL, NULL, '{}'::jsonb);
 
-	local cur = con:execute (query_insert)	-- try the insertion
-	if cur then print (string.format ('ApptiveGrid entity %s replicated.', item._id)) end
+		]], item.replicationkey, createtime)
+
+		--print('INSERT: ' .. query_insert)
+
+		local cur = con:execute (query_insert)	-- try the insertion
+		if cur then print (string.format ('ApptiveGrid entity %s replicated.', item._id)) end
+	end
 end
-
 
 -- close everything
 con:close()
