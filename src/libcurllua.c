@@ -84,6 +84,18 @@ static int l_curl_easy_setopt_netrc(lua_State *L) {
 	return 1;
 }
 
+static int l_curl_easy_setopt_netrc_file(lua_State *L) {
+	
+	CURL *curl = (CURL *)lua_touserdata(L, -2);
+	const char *filename = lua_tostring(L, -1);
+
+	CURLcode code =	curl_easy_setopt(curl, CURLOPT_NETRC_FILE, filename);
+
+	lua_pushinteger(L, code);
+
+	return 1;
+}
+
 static int l_curl_easy_setopt_post(lua_State *L) {
 	
 	CURL *curl = (CURL *)lua_touserdata(L, -2);
@@ -667,6 +679,7 @@ static const struct luaL_Reg libcurl [] = {
 	{"curl_easy_setopt_url", l_curl_easy_setopt_url},
 	{"curl_easy_setopt_header", l_curl_easy_setopt_header},
 	{"curl_easy_setopt_netrc", l_curl_easy_setopt_netrc},
+	{"curl_easy_setopt_netrc_file", l_curl_easy_setopt_netrc_file},
 	{"curl_easy_setopt_post", l_curl_easy_setopt_post},
 	{"curl_easy_setopt_ssl_verifyhost", l_curl_easy_setopt_ssl_verifyhost},
 	{"curl_easy_setopt_ssl_verifypeer", l_curl_easy_setopt_ssl_verifypeer},
