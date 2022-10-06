@@ -1,4 +1,4 @@
-# libcurl.lua
+# curl.lua
 
 This repository provides a Lua module with bindings for the **curl** library, see https://curl.se/libcurl/, and its C api in particular, also see https://curl.se/libcurl/c/.
 
