@@ -4,13 +4,6 @@ local libcurl = require 'libcurllua'
 local curl = {}
 setmetatable(curl, {__index = libcurl})
 
--- NETRC options
-curl.opt_netrc = {
-	CURL_NETRC_IGNORED = 0,
-	CURL_NETRC_OPTIONAL = 1,
-	CURL_NETRC_REQUIRED = 2,
-}
-
 -- CURLcode enum
 curl.CURLcode = {
 	CURLE_OK = 0,

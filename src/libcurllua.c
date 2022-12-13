@@ -9,11 +9,11 @@
 #include <assert.h>
 #include <lua.h>
 #include <lauxlib.h>
-#ifdef __linux__ 
-    //linux code goes here
-	#include <curl/curl.h>
-#else
+
+#ifdef _WIN32 
 	#include <curl\curl.h>
+#else
+	#include <curl/curl.h>
 #endif
 
 /* CURL *curl_easy_init(void); */
@@ -716,8 +716,27 @@ static const struct luaL_Reg libcurl [] = {
 	{NULL, NULL} /* sentinel */
 };
  
+static void enum_CURL_NETRC_OPTION (lua_State *L) {
+	
+	lua_newtable (L);
+
+	lua_pushinteger (L, CURL_NETRC_IGNORED);
+	lua_setfield (L, -2, "CURL_NETRC_IGNORED");
+	lua_pushinteger (L, CURL_NETRC_OPTIONAL);
+	lua_setfield (L, -2, "CURL_NETRC_OPTIONAL");
+	lua_pushinteger (L, CURL_NETRC_REQUIRED);
+	lua_setfield (L, -2, "CURL_NETRC_REQUIRED");
+	lua_pushinteger (L, CURL_NETRC_LAST);
+	lua_setfield (L, -2, "CURL_NETRC_LAST");
+
+	lua_setfield (L, -2, "CURL_NETRC_OPTION");
+}
+
 int luaopen_libcurllua (lua_State *L) {
 	luaL_newlib(L, libcurl);
+
+	enum_CURL_NETRC_OPTION (L);
+
 	return 1;
 }
 
