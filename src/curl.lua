@@ -108,10 +108,9 @@ curl.CURLcode = {
 
 function curl.curl_easy_do(handler)
 	local cu = curl.curl_easy_init()
-	local res, v = pcall(handler, cu)
-	assert(res)
+	local tbl = table.pack(pcall(handler, cu))
 	curl.curl_easy_cleanup(cu)
-	return v
+	return table.unpack (tbl)
 end
 
 function curl.curl_slist(tbl)

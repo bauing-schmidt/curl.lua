@@ -456,9 +456,11 @@ size_t read_callback_filename(char *ptr, size_t size, size_t nmemb, void *userda
 	
 	nread = (curl_off_t)retcode;
 	
+	/*
 	fprintf(stderr, "*** We read %" CURL_FORMAT_CURL_OFF_T " bytes from file\n", nread);
 	fflush(stdout);
-	
+	*/
+
 	return retcode;
 }
 
@@ -509,8 +511,10 @@ size_t read_callback_string(char *ptr, size_t size, size_t nmemb, void *userdata
 		assert(lua_gettop(L) == 0);	// ensure the cleaning.
 	}
 
+	/*
 	printf("readfunction_string: asked for %d of %d: %s\n", (int)n, (int)nmemb, ptr);
 	fflush(stdout);
+	*/
 
 	return n;
 }
