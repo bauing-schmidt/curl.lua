@@ -9,6 +9,7 @@
 #include <assert.h>
 #include <lua.h>
 #include <lauxlib.h>
+#include <sys/stat.h>
 
 #ifdef _WIN32 
 	#include <curl\curl.h>
@@ -285,6 +286,44 @@ static int l_curl_easy_duphandle(lua_State *L) {
 	return 1;
 }
 
+static int l_curl_easy_setopt_aws_sigv4(lua_State *L) {
+	
+	CURL *curl = (CURL *)lua_touserdata(L, -2);
+	const char *param = lua_tostring(L, -1);
+
+	CURLcode code =	curl_easy_setopt(curl, CURLOPT_AWS_SIGV4, param);
+
+	lua_pushinteger(L, code);
+
+	return 1;
+}
+
+static int l_curl_easy_setopt_delete(lua_State *L) {
+	
+	CURL *curl = (CURL *)lua_touserdata(L, -2);
+	int param = lua_toboolean(L, -1);
+
+	CURLcode code = param ?	
+		curl_easy_setopt(curl, CURLOPT_CUSTOMREQUEST, "DELETE") : 
+		curl_easy_setopt(curl, CURLOPT_CUSTOMREQUEST, "NULL");
+
+	lua_pushinteger(L, code);
+
+	return 1;
+}
+
+static int l_curl_easy_setopt_customrequest(lua_State *L) {
+	
+	CURL *curl = (CURL *)lua_touserdata(L, -2);
+	const char *param = lua_tostring(L, -1);
+
+	CURLcode code =	curl_easy_setopt(curl, CURLOPT_CUSTOMREQUEST, param);
+
+	lua_pushinteger(L, code);
+
+	return 1;
+}
+
 static int l_curl_slist_append(lua_State *L) {
 	
 	struct curl_slist *list = (struct curl_slist *)lua_touserdata(L, -2);
@@ -475,7 +514,14 @@ static int l_curl_easy_setopt_readfunction_filename(lua_State *L) {
 
 	CURLcode ccode = curl_easy_setopt(curl, CURLOPT_READDATA,  file);
 	assert(ccode == 0);
-	
+
+	struct stat st;
+    int fd = fileno(file);    // get file descriptor
+    fstat(fd, &st);
+    off_t size = st.st_size;
+	ccode =	curl_easy_setopt(curl, CURLOPT_INFILESIZE_LARGE, size);
+	assert(ccode == CURLE_OK);
+
 	lua_pushinteger(L, code);
 	lua_pushlightuserdata(L, file);
 	
@@ -702,6 +748,9 @@ static const struct luaL_Reg libcurl [] = {
 	{"curl_easy_setopt_readfunction", l_curl_easy_setopt_readfunction},
 	{"curl_easy_setopt_readfunction_filename", l_curl_easy_setopt_readfunction_filename},
 	{"curl_easy_setopt_readfunction_string", l_curl_easy_setopt_readfunction_string},
+	{"curl_easy_setopt_aws_sigv4", l_curl_easy_setopt_aws_sigv4},
+	{"curl_easy_setopt_customrequest", l_curl_easy_setopt_customrequest},
+	{"curl_easy_setopt_delete", l_curl_easy_setopt_delete},
 	{"curl_easy_getinfo_response_code", l_curl_easy_getinfo_response_code},
 	{"curl_easy_getopt_writedata", l_curl_easy_getopt_writedata},
 	{"curl_easy_perform", l_curl_easy_perform},
