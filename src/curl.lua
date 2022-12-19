@@ -106,6 +106,11 @@ curl.CURLcode = {
 	CURLE_UNRECOVERABLE_POLL = 99,
 }
 
+function curl.assertCURLE_OK (code, ...)
+	assert(code == curl.CURLcode.CURLE_OK)
+	return ...
+end
+
 function curl.curl_easy_do(handler)
 	local cu = curl.curl_easy_init()
 	local tbl = table.pack(pcall(handler, cu))
@@ -115,7 +120,7 @@ end
 
 function curl.curl_slist(tbl)
 
-	local list = nil
+	local list = curl.NULL
 
 	for k, v in pairs(tbl) do
 		local h = k .. ': ' .. v

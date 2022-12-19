@@ -790,6 +790,9 @@ int luaopen_libcurllua (lua_State *L) {
 
 	enum_CURL_NETRC_OPTION (L);
 
+	lua_pushlightuserdata (L, NULL);
+	lua_setfield (L, -2, "NULL");
+
 	return 1;
 }
 
