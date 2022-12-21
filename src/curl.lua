@@ -28,21 +28,6 @@ function curl.curl_slist(tbl)
 	return list
 end
 
-function curl.with_http_header_do(tbl, recv)
-
-	local list = nil
-
-	for k, v in pairs(tbl) do
-		local h = k .. ': ' .. v
-		list = curl.curl_slist_append(list, h)
-	end
-
-	pcall(recv, list)
-
-	curl.curl_slist_free_all(list)
-
-end
-
 function curl.curl_easy_setopt(cu, tbl)
 
 	local returns = {}
