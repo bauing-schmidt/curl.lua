@@ -908,8 +908,6 @@ static void enum_CURLcode (lua_State *L) {
   lua_setfield (L, -2, "CURLE_SSL_CACERT");
   lua_pushinteger (L, CURLE_BAD_CONTENT_ENCODING);
   lua_setfield (L, -2, "CURLE_BAD_CONTENT_ENCODING");
-  lua_pushinteger (L, CURLE_OBSOLETE62);
-  lua_setfield (L, -2, "CURLE_OBSOLETE62");
   lua_pushinteger (L, CURLE_FILESIZE_EXCEEDED);
   lua_setfield (L, -2, "CURLE_FILESIZE_EXCEEDED");
   lua_pushinteger (L, CURLE_USE_SSL_FAILED);
@@ -934,10 +932,6 @@ static void enum_CURLcode (lua_State *L) {
   lua_setfield (L, -2, "CURLE_REMOTE_FILE_EXISTS");
   lua_pushinteger (L, CURLE_TFTP_NOSUCHUSER);
   lua_setfield (L, -2, "CURLE_TFTP_NOSUCHUSER");
-  lua_pushinteger (L, CURLE_OBSOLETE75);
-  lua_setfield (L, -2, "CURLE_OBSOLETE75");
-  lua_pushinteger (L, CURLE_OBSOLETE76);
-  lua_setfield (L, -2, "CURLE_OBSOLETE76");
   lua_pushinteger (L, CURLE_SSL_CACERT_BADFILE);
   lua_setfield (L, -2, "CURLE_SSL_CACERT_BADFILE");
   lua_pushinteger (L, CURLE_REMOTE_FILE_NOT_FOUND);
@@ -982,8 +976,6 @@ static void enum_CURLcode (lua_State *L) {
   lua_setfield (L, -2, "CURLE_PROXY");
   lua_pushinteger (L, CURLE_SSL_CLIENTCERT);
   lua_setfield (L, -2, "CURLE_SSL_CLIENTCERT");
-  lua_pushinteger (L, CURLE_UNRECOVERABLE_POLL);
-  lua_setfield (L, -2, "CURLE_UNRECOVERABLE_POLL");
   lua_pushinteger (L, CURL_LAST);
   lua_setfield (L, -2, "CURL_LAST");
 

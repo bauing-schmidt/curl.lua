@@ -1,7 +1,6 @@
 
 linux:
-	gcc -O2 -std=gnu99 -fPIC -Wall -g -I/usr/local/include/ -s -shared -o \
-		libcurllua.so libcurllua.c -lcurl -L/usr/local/lib/ -llua 
+	gcc -O2 -std=gnu17 -fPIC -Wall -shared -o libcurllua.so libcurllua.c -lcurl -llua 
 
 macos:
 	cc -O2 -std=c11 -fPIC -Wall \
