@@ -89,9 +89,8 @@ function curl.curl_easy_httpheader_setopt_getinfo (tbl)
 		
 			local response, size = curl.curl_easy_getopt_writedata(chunk_ptr)
 			
-			assert(#response == size)
+			assert(#response == size, "The actual size doesn''t correspond with the expected one.")
 
-			response = string.char (table.unpack (response))
 			function returns.writefunction () return code, response, size end
 		end
 

@@ -543,37 +543,25 @@ int l_curl_easy_setopt_readfunction_string(lua_State *L)
 	return 2;
 }
 
-int l_curl_easy_getopt_writedata1(lua_State *L)
-{
-
-	writefunction_memory_t *memory = (writefunction_memory_t *)lua_touserdata(L, 1);
-
-	lua_pushstring(L, memory->response);
-	lua_pushinteger(L, memory->size);
-
-	free(memory->response);
-	free(memory);
-
-	return 2;
-}
-
 int l_curl_easy_getopt_writedata(lua_State *L)
 {
 
 	FILE *tmp = (FILE *)lua_touserdata(L, 1);
 
 	fseek(tmp, 0L, SEEK_END);
-	int sz = ftell(tmp);
-
+	size_t sz = ftell(tmp);
 	rewind(tmp);
 
-	lua_createtable(L, sz, 0);
+	luaL_Buffer b;
 
-	for (int i = 1; i <= sz; i++)
+	luaL_buffinit(L, &b);
+
+	for (int i = 0; i < sz; i++)
 	{
-		lua_pushinteger(L, fgetc(tmp));
-		lua_seti(L, -2, i);
+		luaL_addchar(&b, fgetc(tmp));
 	}
+
+	luaL_pushresult(&b);
 
 	lua_pushinteger(L, sz);
 
