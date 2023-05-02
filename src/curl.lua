@@ -31,7 +31,7 @@ end
 function curl.curl_easy_setopt(cu, tbl)
 
 	local returns = {}
-			
+
 	for k, v in pairs(tbl) do
 		local setopt_k = curl['curl_easy_setopt_' .. k]
 		if type(setopt_k) == 'function' then
@@ -84,13 +84,14 @@ function curl.curl_easy_httpheader_setopt_getinfo (tbl)
 		curl.curl_slist_free_all(headers)	-- release the memory for headers.
 
 		if type(returns.writefunction) == 'function' then
-			local code, thread = returns.writefunction()
+			local code, chunk_ptr = returns.writefunction()
 			assert(code == curl.CURLcode.CURLE_OK)
 		
-			local response, size = curl.curl_easy_getopt_writedata(thread)
-			thread = nil	-- to let the GC to reclaim such thread.
-
+			local response, size = curl.curl_easy_getopt_writedata(chunk_ptr)
+			
 			assert(#response == size)
+
+			response = string.char (table.unpack (response))
 			function returns.writefunction () return code, response, size end
 		end
 

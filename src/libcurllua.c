@@ -1,8 +1,4 @@
 
-/*
-	This is a glue c file for importing delta client c functions into Lua workflow.
-*/
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -17,7 +13,7 @@
 #include <curl/curl.h>
 #endif
 
-static int l_curl_easy_init(lua_State *L)
+int l_curl_easy_init(lua_State *L)
 {
 
 	CURL *curl = curl_easy_init();
@@ -27,7 +23,7 @@ static int l_curl_easy_init(lua_State *L)
 	return 1;
 }
 
-static int l_curl_easy_cleanup(lua_State *L)
+int l_curl_easy_cleanup(lua_State *L)
 {
 
 	CURL *curl = (CURL *)lua_touserdata(L, -1);
@@ -37,7 +33,7 @@ static int l_curl_easy_cleanup(lua_State *L)
 	return 0;
 }
 
-static int l_curl_easy_perform(lua_State *L)
+int l_curl_easy_perform(lua_State *L)
 {
 
 	CURL *curl = (CURL *)lua_touserdata(L, -1);
@@ -49,7 +45,7 @@ static int l_curl_easy_perform(lua_State *L)
 	return 1;
 }
 
-static int l_curl_easy_setopt_url(lua_State *L)
+int l_curl_easy_setopt_url(lua_State *L)
 {
 
 	CURL *curl = (CURL *)lua_touserdata(L, -2);
@@ -62,7 +58,7 @@ static int l_curl_easy_setopt_url(lua_State *L)
 	return 1;
 }
 
-static int l_curl_easy_setopt_header(lua_State *L)
+int l_curl_easy_setopt_header(lua_State *L)
 {
 
 	CURL *curl = (CURL *)lua_touserdata(L, -2);
@@ -75,7 +71,7 @@ static int l_curl_easy_setopt_header(lua_State *L)
 	return 1;
 }
 
-static int l_curl_easy_setopt_netrc(lua_State *L)
+int l_curl_easy_setopt_netrc(lua_State *L)
 {
 
 	CURL *curl = (CURL *)lua_touserdata(L, -2);
@@ -88,7 +84,7 @@ static int l_curl_easy_setopt_netrc(lua_State *L)
 	return 1;
 }
 
-static int l_curl_easy_setopt_netrc_file(lua_State *L)
+int l_curl_easy_setopt_netrc_file(lua_State *L)
 {
 
 	CURL *curl = (CURL *)lua_touserdata(L, -2);
@@ -101,7 +97,7 @@ static int l_curl_easy_setopt_netrc_file(lua_State *L)
 	return 1;
 }
 
-static int l_curl_easy_setopt_post(lua_State *L)
+int l_curl_easy_setopt_post(lua_State *L)
 {
 
 	CURL *curl = (CURL *)lua_touserdata(L, -2);
@@ -114,7 +110,7 @@ static int l_curl_easy_setopt_post(lua_State *L)
 	return 1;
 }
 
-static int l_curl_easy_setopt_ssl_verifyhost(lua_State *L)
+int l_curl_easy_setopt_ssl_verifyhost(lua_State *L)
 {
 
 	CURL *curl = (CURL *)lua_touserdata(L, -2);
@@ -127,7 +123,7 @@ static int l_curl_easy_setopt_ssl_verifyhost(lua_State *L)
 	return 1;
 }
 
-static int l_curl_easy_setopt_ssl_verifypeer(lua_State *L)
+int l_curl_easy_setopt_ssl_verifypeer(lua_State *L)
 {
 
 	CURL *curl = (CURL *)lua_touserdata(L, -2);
@@ -140,7 +136,7 @@ static int l_curl_easy_setopt_ssl_verifypeer(lua_State *L)
 	return 1;
 }
 
-static int l_curl_easy_setopt_httpget(lua_State *L)
+int l_curl_easy_setopt_httpget(lua_State *L)
 {
 
 	CURL *curl = (CURL *)lua_touserdata(L, -2);
@@ -153,7 +149,7 @@ static int l_curl_easy_setopt_httpget(lua_State *L)
 	return 1;
 }
 
-static int l_curl_easy_setopt_upload(lua_State *L)
+int l_curl_easy_setopt_upload(lua_State *L)
 {
 
 	CURL *curl = (CURL *)lua_touserdata(L, -2);
@@ -166,7 +162,7 @@ static int l_curl_easy_setopt_upload(lua_State *L)
 	return 1;
 }
 
-static int l_curl_easy_setopt_upload_buffersize(lua_State *L)
+int l_curl_easy_setopt_upload_buffersize(lua_State *L)
 {
 
 	CURL *curl = (CURL *)lua_touserdata(L, -2);
@@ -179,7 +175,7 @@ static int l_curl_easy_setopt_upload_buffersize(lua_State *L)
 	return 1;
 }
 
-static int l_curl_easy_setopt_infilesize(lua_State *L)
+int l_curl_easy_setopt_infilesize(lua_State *L)
 {
 
 	CURL *curl = (CURL *)lua_touserdata(L, -2);
@@ -192,7 +188,7 @@ static int l_curl_easy_setopt_infilesize(lua_State *L)
 	return 1;
 }
 
-static int l_curl_easy_setopt_verbose(lua_State *L)
+int l_curl_easy_setopt_verbose(lua_State *L)
 {
 
 	CURL *curl = (CURL *)lua_touserdata(L, -2);
@@ -205,7 +201,7 @@ static int l_curl_easy_setopt_verbose(lua_State *L)
 	return 1;
 }
 
-static int l_curl_easy_setopt_capath(lua_State *L)
+int l_curl_easy_setopt_capath(lua_State *L)
 {
 
 	CURL *curl = (CURL *)lua_touserdata(L, -2);
@@ -218,7 +214,7 @@ static int l_curl_easy_setopt_capath(lua_State *L)
 	return 1;
 }
 
-static int l_curl_easy_setopt_cainfo(lua_State *L)
+int l_curl_easy_setopt_cainfo(lua_State *L)
 {
 
 	CURL *curl = (CURL *)lua_touserdata(L, -2);
@@ -231,7 +227,7 @@ static int l_curl_easy_setopt_cainfo(lua_State *L)
 	return 1;
 }
 
-static int l_curl_easy_setopt_username(lua_State *L)
+int l_curl_easy_setopt_username(lua_State *L)
 {
 
 	CURL *curl = (CURL *)lua_touserdata(L, -2);
@@ -244,7 +240,7 @@ static int l_curl_easy_setopt_username(lua_State *L)
 	return 1;
 }
 
-static int l_curl_easy_setopt_password(lua_State *L)
+int l_curl_easy_setopt_password(lua_State *L)
 {
 
 	CURL *curl = (CURL *)lua_touserdata(L, -2);
@@ -257,7 +253,7 @@ static int l_curl_easy_setopt_password(lua_State *L)
 	return 1;
 }
 
-static int l_curl_easy_setopt_postfields(lua_State *L)
+int l_curl_easy_setopt_postfields(lua_State *L)
 {
 
 	CURL *curl = (CURL *)lua_touserdata(L, -2);
@@ -270,7 +266,7 @@ static int l_curl_easy_setopt_postfields(lua_State *L)
 	return 1;
 }
 
-static int l_curl_easy_setopt_httpheader(lua_State *L)
+int l_curl_easy_setopt_httpheader(lua_State *L)
 {
 
 	CURL *curl = (CURL *)lua_touserdata(L, -2);
@@ -283,7 +279,7 @@ static int l_curl_easy_setopt_httpheader(lua_State *L)
 	return 1;
 }
 
-static int l_curl_easy_reset(lua_State *L)
+int l_curl_easy_reset(lua_State *L)
 {
 
 	CURL *curl = (CURL *)lua_touserdata(L, -1);
@@ -293,7 +289,7 @@ static int l_curl_easy_reset(lua_State *L)
 	return 0;
 }
 
-static int l_curl_easy_duphandle(lua_State *L)
+int l_curl_easy_duphandle(lua_State *L)
 {
 
 	CURL *curl = (CURL *)lua_touserdata(L, -1);
@@ -305,7 +301,7 @@ static int l_curl_easy_duphandle(lua_State *L)
 	return 1;
 }
 
-static int l_curl_easy_setopt_aws_sigv4(lua_State *L)
+int l_curl_easy_setopt_aws_sigv4(lua_State *L)
 {
 
 	CURL *curl = (CURL *)lua_touserdata(L, -2);
@@ -318,7 +314,7 @@ static int l_curl_easy_setopt_aws_sigv4(lua_State *L)
 	return 1;
 }
 
-static int l_curl_easy_setopt_delete(lua_State *L)
+int l_curl_easy_setopt_delete(lua_State *L)
 {
 
 	CURL *curl = (CURL *)lua_touserdata(L, -2);
@@ -331,7 +327,7 @@ static int l_curl_easy_setopt_delete(lua_State *L)
 	return 1;
 }
 
-static int l_curl_easy_setopt_customrequest(lua_State *L)
+int l_curl_easy_setopt_customrequest(lua_State *L)
 {
 
 	CURL *curl = (CURL *)lua_touserdata(L, -2);
@@ -344,7 +340,7 @@ static int l_curl_easy_setopt_customrequest(lua_State *L)
 	return 1;
 }
 
-static int l_curl_slist_append(lua_State *L)
+int l_curl_slist_append(lua_State *L)
 {
 
 	struct curl_slist *list = (struct curl_slist *)lua_touserdata(L, -2);
@@ -357,7 +353,7 @@ static int l_curl_slist_append(lua_State *L)
 	return 1;
 }
 
-static int l_curl_slist_free_all(lua_State *L)
+int l_curl_slist_free_all(lua_State *L)
 {
 
 	struct curl_slist *list = (struct curl_slist *)lua_touserdata(L, -1);
@@ -367,92 +363,24 @@ static int l_curl_slist_free_all(lua_State *L)
 	return 0;
 }
 
-static size_t cb(void *data, size_t unarysize, size_t nmemb, void *userp)
+typedef struct writefunction_memory_s
 {
-	assert(unarysize == 1); // according to the documentation.
+	void *response;
+	size_t size;
+} writefunction_memory_t;
 
-	lua_State *L = (lua_State *)userp;
-	void *response = lua_touserdata(L, -2);
-	lua_Integer size = lua_tointeger(L, -1);
-
-	lua_pop(L, 2);
-
-	response = realloc(response, size + nmemb + 1);
-
-	if (response == NULL)
-		return 0;
-
-	memcpy(response + size, data, nmemb);
-	size += nmemb;
-	((char *)response)[size] = 0;
-
-	lua_pushlightuserdata(L, response);
-	lua_pushinteger(L, size);
-
-	return nmemb;
-}
-
-static size_t cb1(void *data, size_t size, size_t nmemb, void *userp)
+int l_curl_easy_setopt_writefunction(lua_State *L)
 {
-	size_t realsize = cb(data, size, nmemb, userp);
+	CURL *curl = (CURL *)lua_touserdata(L, 1);
 
-	if (realsize == 0)
-		return realsize; // propagate the error in case.
+	FILE *tmp = tmpfile();
+	CURLcode code = curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, &fwrite);
 
-	lua_State *S = (lua_State *)userp;
-
-	assert(lua_gettop(S) == 4);
-
-	const char *response = (const char *)lua_touserdata(S, -2);
-
-	lua_State *L = (lua_State *)lua_touserdata(S, -4);
-	assert(L != NULL);
-
-	lua_pushvalue(S, -3); // duplicate the callback function for repeated applications of it.
-	lua_xmove(S, L, 1);
-	lua_pushstring(L, response);
-	lua_pushinteger(L, realsize);
-	lua_call(L, 2, 0);
-
-	return realsize;
-}
-
-static int l_curl_easy_setopt_writefunction(lua_State *L)
-{
-
-	CURL *curl = (CURL *)lua_touserdata(L, -2); // the second argument is the callback function
-	int isfunction = lua_isfunction(L, -1);
-
-	lua_State *S = lua_newthread(L); // such a new thread is pushed on L also.
-
-	CURLcode code;
-
-	if (isfunction == 1)
-	{
-		lua_pushlightuserdata(S, L); // put the current state itself
-		lua_pushvalue(L, -2);		 // duplicate the given function
-		lua_xmove(L, S, 1);			 // then save the doubled reference to the helper state.
-
-		code = curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, cb1);
-	}
-	else
-	{
-		code = curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, cb);
-	}
-
-	lua_pushlightuserdata(S, NULL); // prepare the pointer for collecting the final string.
-	lua_pushinteger(S, 0);			// the initial size is 0.
-
-	CURLcode ccode = curl_easy_setopt(curl, CURLOPT_WRITEDATA, S);
+	CURLcode ccode = curl_easy_setopt(curl, CURLOPT_WRITEDATA, tmp);
 	assert(ccode == CURLE_OK);
 
 	lua_pushinteger(L, code);
-
-	lua_pushvalue(L, -2); // duplicate the working thread
-	lua_remove(L, -3);	  // cleanup a doubled value
-
-	assert(lua_isinteger(L, -2));
-	assert(lua_isthread(L, -1));
+	lua_pushlightuserdata(L, tmp);
 
 	return 2;
 }
@@ -487,7 +415,7 @@ size_t read_callback(char *buffer, size_t size, size_t nitems, void *userdata)
 	return len;
 }
 
-static int l_curl_easy_setopt_readfunction(lua_State *L)
+int l_curl_easy_setopt_readfunction(lua_State *L)
 {
 
 	CURL *curl = (CURL *)lua_touserdata(L, -2); // the second argument is the callback function
@@ -525,7 +453,7 @@ size_t read_callback_filename(char *ptr, size_t size, size_t nmemb, void *userda
 	return retcode;
 }
 
-static int l_curl_easy_setopt_readfunction_filename(lua_State *L)
+int l_curl_easy_setopt_readfunction_filename(lua_State *L)
 {
 
 	CURL *curl = (CURL *)lua_touserdata(L, -2);
@@ -590,7 +518,7 @@ size_t read_callback_string(char *ptr, size_t size, size_t nmemb, void *userdata
 	return n;
 }
 
-static int l_curl_easy_setopt_readfunction_string(lua_State *L)
+int l_curl_easy_setopt_readfunction_string(lua_State *L)
 {
 
 	CURL *curl = (CURL *)lua_touserdata(L, -2);
@@ -615,34 +543,46 @@ static int l_curl_easy_setopt_readfunction_string(lua_State *L)
 	return 2;
 }
 
-static int l_curl_easy_getopt_writedata(lua_State *L)
+int l_curl_easy_getopt_writedata1(lua_State *L)
 {
 
-	lua_State *S = lua_tothread(L, -1);
+	writefunction_memory_t *memory = (writefunction_memory_t *)lua_touserdata(L, 1);
 
-	void *response = lua_touserdata(S, -2);
-	lua_Integer size = lua_tointeger(S, -1);
+	lua_pushstring(L, memory->response);
+	lua_pushinteger(L, memory->size);
 
-	lua_pop(S, 2);
-
-	if (lua_gettop(S) == 2)
-	{
-		assert(lua_isfunction(S, -1));
-		assert(lua_islightuserdata(S, -2));
-		lua_pop(S, 2);
-	}
-
-	assert(lua_gettop(S) == 0);
-
-	lua_pushstring(L, (const char *)response);
-	lua_pushinteger(L, size);
-
-	free(response); // we can release the memory because Lua interns its own copy of `response`.
+	free(memory->response);
+	free(memory);
 
 	return 2;
 }
 
-static int l_curl_easy_getinfo_response_code(lua_State *L)
+int l_curl_easy_getopt_writedata(lua_State *L)
+{
+
+	FILE *tmp = (FILE *)lua_touserdata(L, 1);
+
+	fseek(tmp, 0L, SEEK_END);
+	int sz = ftell(tmp);
+
+	rewind(tmp);
+
+	lua_createtable(L, sz, 0);
+
+	for (int i = 1; i <= sz; i++)
+	{
+		lua_pushinteger(L, fgetc(tmp));
+		lua_seti(L, -2, i);
+	}
+
+	lua_pushinteger(L, sz);
+
+	fclose(tmp);
+
+	return 2;
+}
+
+int l_curl_easy_getinfo_response_code(lua_State *L)
 {
 
 	CURL *curl = (CURL *)lua_touserdata(L, -1);
@@ -656,7 +596,7 @@ static int l_curl_easy_getinfo_response_code(lua_State *L)
 	return 2;
 }
 
-static int l_curl_version(lua_State *L)
+int l_curl_version(lua_State *L)
 {
 
 	char *version = curl_version();
@@ -666,7 +606,7 @@ static int l_curl_version(lua_State *L)
 	return 1;
 }
 
-static int l_curl_getdate(lua_State *L)
+int l_curl_getdate(lua_State *L)
 {
 
 	const char *datestr = lua_tostring(L, -1);
@@ -677,7 +617,7 @@ static int l_curl_getdate(lua_State *L)
 	return 1;
 }
 
-static int l_curl_easy_escape(lua_State *L)
+int l_curl_easy_escape(lua_State *L)
 {
 
 	CURL *curl = (CURL *)lua_touserdata(L, -2);
@@ -704,7 +644,7 @@ int l_curl_easy_setopt_accept_encoding(lua_State *L)
 	return 1;
 }
 
-static int l_curl_easy_unescape(lua_State *L)
+int l_curl_easy_unescape(lua_State *L)
 {
 
 	CURL *curl = (CURL *)lua_touserdata(L, -2);
@@ -721,7 +661,7 @@ static int l_curl_easy_unescape(lua_State *L)
 	return 2;
 }
 
-static int l_curl_free(lua_State *L)
+int l_curl_free(lua_State *L)
 {
 	const char *str = lua_tostring(L, -1);
 	curl_free((char *)str);
@@ -729,7 +669,7 @@ static int l_curl_free(lua_State *L)
 	return 0;
 }
 
-static int l_libc_free(lua_State *L)
+int l_libc_free(lua_State *L)
 {
 	void *p = lua_touserdata(L, -1);
 	free(p);
@@ -737,7 +677,7 @@ static int l_libc_free(lua_State *L)
 	return 0;
 }
 
-static int l_liblua_lua_close(lua_State *L)
+int l_liblua_lua_close(lua_State *L)
 {
 	lua_State *S = (lua_State *)lua_touserdata(L, -1);
 	lua_close(S);
@@ -745,7 +685,7 @@ static int l_liblua_lua_close(lua_State *L)
 	return 0;
 }
 
-static int l_libc_fclose(lua_State *L)
+int l_libc_fclose(lua_State *L)
 {
 	FILE *p = (FILE *)lua_touserdata(L, -1);
 	int r = fclose(p);
@@ -755,7 +695,7 @@ static int l_libc_fclose(lua_State *L)
 	return 1;
 }
 
-static int l_test(lua_State *L)
+int l_test(lua_State *L)
 {
 	lua_State *S = lua_newthread(L); // such a new thread is pushed on L also.
 	lua_Integer i = lua_tointeger(L, -2);
@@ -764,7 +704,7 @@ static int l_test(lua_State *L)
 	return 1;
 }
 
-static int l_test_func(lua_State *L)
+int l_test_func(lua_State *L)
 {
 	lua_State *S = lua_newthread(L); // such a new thread is pushed on L also.
 	lua_pushvalue(L, -2);			 // duplicate the given function
@@ -776,7 +716,7 @@ static int l_test_func(lua_State *L)
 	Registration phase starts
 */
 
-static const struct luaL_Reg libcurl[] = {
+const struct luaL_Reg libcurl[] = {
 	{"curl_easy_init", l_curl_easy_init},
 	{"curl_easy_cleanup", l_curl_easy_cleanup},
 	{"curl_easy_reset", l_curl_easy_reset},
@@ -825,7 +765,7 @@ static const struct luaL_Reg libcurl[] = {
 	{NULL, NULL} /* sentinel */
 };
 
-static void enum_CURL_NETRC_OPTION(lua_State *L)
+void enum_CURL_NETRC_OPTION(lua_State *L)
 {
 
 	lua_newtable(L);
@@ -842,7 +782,7 @@ static void enum_CURL_NETRC_OPTION(lua_State *L)
 	lua_setfield(L, -2, "CURL_NETRC_OPTION");
 }
 
-static void enum_CURLcode(lua_State *L)
+void enum_CURLcode(lua_State *L)
 {
 
 	lua_newtable(L);
