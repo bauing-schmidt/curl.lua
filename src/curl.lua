@@ -73,6 +73,8 @@ function curl.curl_easy_httpheader_setopt_getinfo (tbl)
 
 	return function (cu)
 
+		curl.curl_easy_reset (cu)	-- reset the session handler because we have new params here.
+
 		local headers = curl.curl_slist(headers_tbl)
 		setopt_tbl.httpheader = headers	-- override anything already present for the headers.
 				
@@ -120,6 +122,8 @@ function curl.curl_easy_httpheader_setopt_getinfo (tbl)
 		end
 
 		local getinfos = curl.curl_easy_getinfo(cu, getinfo_tbl)
+
+		curl.curl_easy_reset (cu)	-- reset the session handler because we have new params here.
 		
 		return returns, getinfos
 	end

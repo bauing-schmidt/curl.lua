@@ -1,6 +1,6 @@
 
 linux:
-	gcc -O2 -std=gnu17 -fPIC -Wall -shared -o libcurllua.so libcurllua.c -lcurl -llua 
+	gcc -O2 -std=gnu11 -fPIC -Wall -shared -o libcurllua.so libcurllua.c -lcurl -llua 
 
 macos:
 	cc -O2 -std=c11 -fPIC -Wall \
@@ -19,17 +19,13 @@ mingw:
 install:
 	mkdir -p /usr/local/lib/lua/5.4/	# just for ensuring that the dest dir exists
 	mkdir -p /usr/local/share/lua/5.4/	# just for ensuring that the dest dir exists
+	cp curl.lua /usr/local/share/lua/5.4/
+
+install-linux: install
 	mv libcurllua.so /usr/local/lib/lua/5.4/
-	cp curl.lua /usr/local/share/lua/5.4/
-
-install-macos:
-	mkdir -p /usr/local/lib/lua/5.4/	# just for ensuring that the dest dir exists
-	mkdir -p /usr/local/share/lua/5.4/	# just for ensuring that the dest dir exists
+	
+install-macos: install
 	mv libcurllua.dylib /usr/local/lib/lua/5.4/
-	cp curl.lua /usr/local/share/lua/5.4/
-
-install-mingw:
-	mkdir -p /usr/local/lib/lua/5.4/	# just for ensuring that the dest dir exists
-	mkdir -p /usr/local/share/lua/5.4/	# just for ensuring that the dest dir exists
+	
+install-mingw: install
 	mv libcurllua.dll /usr/local/lib/lua/5.4/
-	cp curl.lua /usr/local/share/lua/5.4/
