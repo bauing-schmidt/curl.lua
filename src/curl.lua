@@ -9,6 +9,14 @@ function curl.assertCURLE_OK (code, ...)
 	return ...
 end
 
+function curl.with_easy_pcall_recv_do (recv)
+	return curl.curl_easy_do (
+		function (curl_easy_handler)
+			return recv (function (f) return pcall (f, curl_easy_handler) end)
+		end
+	)
+end
+
 function curl.curl_easy_do(handler)
 	local cu = curl.curl_easy_init()
 	local tbl = table.pack(pcall(handler, cu))

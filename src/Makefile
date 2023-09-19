@@ -1,9 +1,9 @@
 
 linux:
-	gcc -O2 -std=gnu11 -fPIC -Wall -shared -o libcurllua.so libcurllua.c -lcurl -llua 
+	gcc -O3 -fPIC -Wall -shared -o libcurllua.so libcurllua.c -lcurl -llua 
 
 macos:
-	cc -O2 -std=c11 -fPIC -Wall \
+	cc -O3 -fPIC -Wall \
 		-I/usr/local/include/ \
 		-I/usr/local/Cellar/curl/7.86.0/include -dynamiclib -o \
 		libcurllua.dylib libcurllua.c -L/usr/local/Cellar/curl/7.86.0/lib/ -lcurl -L/usr/local/lib/ -llua 
