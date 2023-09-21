@@ -6,12 +6,7 @@
 #include <lua.h>
 #include <lauxlib.h>
 #include <sys/stat.h>
-
-#ifdef _WIN32
-#include <curl\curl.h>
-#else
 #include <curl/curl.h>
-#endif
 
 int l_curl_easy_init(lua_State *L)
 {

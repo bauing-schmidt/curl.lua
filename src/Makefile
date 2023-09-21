@@ -9,12 +9,12 @@ macos:
 		libcurllua.dylib libcurllua.c -L/usr/local/Cellar/curl/7.86.0/lib/ -lcurl -L/usr/local/lib/ -llua 
 
 mingw:
-	gcc -O2 -std=c11 -fPIC -Wall \
+	gcc -O2 -fPIC -Wall \
 		-I/c/msys64/usr/local/include/ \
-		-I/d/snapshots/curl-7.85.0_1-win64-mingw/include/ \
-		-s -shared -o libcurllua.dll libcurllua.c \
-		-L/d/snapshots/curl-7.85.0_1-win64-mingw/bin/ -lcurl-x64 \
-		-L/c/msys64/usr/local/lib/ -llua54
+		-I/c/msys64/ucrt64/include/ \
+		-shared -o libcurllua.dll libcurllua.c \
+		-L/c/msys64/usr/local/lib/ -llua54 \
+		-L/c/msys64/ucrt64/bin/ -lcurl-4
 
 install:
 	mkdir -p /usr/local/lib/lua/5.4/	# just for ensuring that the dest dir exists
