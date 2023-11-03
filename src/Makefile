@@ -11,10 +11,10 @@ macos:
 mingw:
 	gcc -O2 -fPIC -Wall \
 		-I/c/msys64/usr/local/include/ \
-		-I/c/msys64/ucrt64/include/ \
+		-I/c/msys64/mingw64/include/ \
 		-shared -o libcurllua.dll libcurllua.c \
 		-L/c/msys64/usr/local/lib/ -llua54 \
-		-L/c/msys64/ucrt64/bin/ -lcurl-4
+		-L/c/msys64/mingw64/bin/ -lcurl-4
 
 install:
 	mkdir -p /usr/local/lib/lua/5.4/	# just for ensuring that the dest dir exists
