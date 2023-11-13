@@ -14,7 +14,7 @@ mingw:
 		-I/usr/include/ \
 		-shared -o libcurllua.dll libcurllua.c \
 		-L/usr/local/lib/ -llua54 \
-		-L/bin/ -lcygcurl-4
+		-L/mingw64/bin/ -lcurl-4
 
 install:
 	mkdir -p /usr/local/lib/lua/5.4/	# just for ensuring that the dest dir exists
