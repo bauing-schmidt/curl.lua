@@ -1,17 +1,17 @@
 
 linux:
-	gcc -O3 -fPIC -Wall -shared -o libcurllua.so libcurllua.c -lcurl -llua 
+	gcc -O2 -g -fPIC -Wall -shared -o libcurllua.so libcurllua.c -lcurl -llua 
 
 macos:
-	cc -O3 -fPIC -Wall \
+	cc -O2 -g -fPIC -Wall \
 		-I/usr/local/include/ \
 		-I/usr/local/Cellar/curl/7.86.0/include -dynamiclib -o \
 		libcurllua.dylib libcurllua.c -L/usr/local/Cellar/curl/7.86.0/lib/ -lcurl -L/usr/local/lib/ -llua 
 
 mingw:
-	gcc -O2 -fPIC -Wall \
+	gcc -O2 -g -fPIC -Wall \
 		-I/usr/local/include/ \
-		-I/usr/include/ \
+		-I/mingw64/include/ \
 		-shared -o libcurllua.dll libcurllua.c \
 		-L/usr/local/lib/ -llua54 \
 		-L/mingw64/bin/ -lcurl-4
