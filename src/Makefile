@@ -18,7 +18,7 @@ mingw:
 
 jenkins:
 	gcc -O2 -g -fPIC -Wall -shared -o libcurllua.dll libcurllua.c \
-		-I../../../vm-dependencies/curl/ucrt64/include -I/usr/local/include -L../../../vm-dependencies/curl/ucrt64/bin -L/usr/local/lib \
+		-I../../../vm-dependencies/curl/ucrt64/include/ -I../../lua-5.4.6/include -L../../../vm-dependencies/curl/ucrt64/bin/ -L../../lua-5.4.6/lib/ \
 		-llua54 -lcurl-4
 
 install:
