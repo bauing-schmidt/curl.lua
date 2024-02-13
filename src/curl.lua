@@ -17,21 +17,30 @@ function curl.with_easy_pcall_recv_do (recv)
 	)
 end
 
-function curl.curl_easy_do(handler)
+local function pcall_pre_post (pre, f, post)
+
+	return function (...)
+		if pre then pre (...) end
+
+		local function recv (...) 
+			post (...)
+			return ... 
+		end
+
+		return recv (pcall (f, ...))
+	end
+end
+
+function curl.curl_easy_do (handler)
 	local cu = curl.curl_easy_init()
-	local tbl = table.pack(pcall(handler, cu))
-	curl.curl_easy_cleanup(cu)
-	return table.unpack (tbl)
+	return pcall_pre_post (nil, handler, function () curl.curl_easy_cleanup(cu) end) (cu)
 end
 
 function curl.curl_slist(tbl)
 
 	local list = curl.NULL
 
-	for k, v in pairs(tbl) do
-		local h = k .. ': ' .. v
-		list = curl.curl_slist_append(list, h)
-	end
+	for k, v in pairs(tbl) do list = curl.curl_slist_append(list, k .. ': ' .. v) end
 
 	return list
 end
@@ -72,6 +81,7 @@ end
 
 function curl.curl_easy_httpheader_setopt_getinfo (tbl)
 
+	-- handle here a new table for headers from the server.
 	local headers_tbl, setopt_tbl, getinfo_tbl = 
 		tbl.httpheader, tbl.setopt, tbl.getinfo
 	
@@ -92,6 +102,8 @@ function curl.curl_easy_httpheader_setopt_getinfo (tbl)
 		assert(pcode == curl.CURLcode.CURLE_OK)
 
 		curl.curl_slist_free_all(headers)	-- release the memory for headers.
+
+		headers = curl.curl_easy_header (cu)
 
 		if type(returns.writefunction) == 'function' then
 			local code, chunk_ptr = returns.writefunction()
@@ -133,7 +145,7 @@ function curl.curl_easy_httpheader_setopt_getinfo (tbl)
 
 		curl.curl_easy_reset (cu)	-- reset the session handler because we have new params here.
 		
-		return returns, getinfos
+		return returns, getinfos, headers
 	end
 end
 
