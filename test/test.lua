@@ -1,5 +1,6 @@
 
 local curl = require 'curl'
+local op = require 'operator'
 
 local function G (cu)
 
@@ -23,4 +24,27 @@ end
 print('cURL version: ' .. curl.curl_version() .. '\n')
 --------------------------------------------------------------------------------
 
-curl.curl_easy_do(G)
+-- curl.curl_easy_do(G)
+
+local flag, returns, getinfo, headers = curl.curl_easy_do (
+	curl.curl_easy_httpheader_setopt_getinfo {
+		httpheader = {
+			
+		},
+		setopt = {
+			-- verbose = true,
+			-- cainfo = 'curl-ca-bundle.crt',
+			url = 'https://www.google.com',
+			writefunction = true,
+		},
+		getinfo = {
+			response_code = true,
+		},
+	}
+)
+
+
+
+for k, v in pairs(headers) do
+	print ('*****', k, v)
+end

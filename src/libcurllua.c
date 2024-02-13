@@ -13,7 +13,7 @@ int l_curl_easy_init(lua_State *L)
 
 	CURL *curl = curl_easy_init();
 
-	lua_pushlightuserdata(L, (void *)curl);
+	lua_pushlightuserdata(L, curl);
 
 	return 1;
 }
@@ -21,7 +21,7 @@ int l_curl_easy_init(lua_State *L)
 int l_curl_easy_cleanup(lua_State *L)
 {
 
-	CURL *curl = (CURL *)lua_touserdata(L, -1);
+	CURL *curl = (CURL *)lua_touserdata(L, 1);
 
 	curl_easy_cleanup(curl);
 
@@ -31,7 +31,7 @@ int l_curl_easy_cleanup(lua_State *L)
 int l_curl_easy_perform(lua_State *L)
 {
 
-	CURL *curl = (CURL *)lua_touserdata(L, -1);
+	CURL *curl = (CURL *)lua_touserdata(L, 1);
 
 	CURLcode code = curl_easy_perform(curl);
 
@@ -43,8 +43,8 @@ int l_curl_easy_perform(lua_State *L)
 int l_curl_easy_setopt_url(lua_State *L)
 {
 
-	CURL *curl = (CURL *)lua_touserdata(L, -2);
-	const char *url = lua_tostring(L, -1);
+	CURL *curl = (CURL *)lua_touserdata(L, 1);
+	const char *url = lua_tostring(L, 2);
 
 	CURLcode code = curl_easy_setopt(curl, CURLOPT_URL, url);
 
@@ -604,9 +604,10 @@ int l_curl_easy_escape(lua_State *L)
 {
 
 	CURL *curl = (CURL *)lua_touserdata(L, -2);
-	const char *str = lua_tostring(L, -1);
+	size_t l;
+	const char *str = lua_tolstring(L, -1, &l);
 
-	char *encoded = curl_easy_escape(curl, str, 0);
+	char *encoded = curl_easy_escape(curl, str, l);
 
 	lua_pushstring(L, encoded);
 
@@ -695,6 +696,31 @@ int l_test_func(lua_State *L)
 	return 1; // the thread actually
 }
 
+int l_curl_easy_header(lua_State *L)
+{
+
+	CURL *curl = (CURL *)lua_touserdata(L, 1);
+
+	lua_Integer request = lua_type(L, 2) == LUA_TNUMBER ? lua_tointeger(L, 2) : 0;
+
+	struct curl_header *prev = NULL;
+	struct curl_header *h;
+	curl_easy_setopt(curl, CURLOPT_URL, "https://example.com");
+	curl_easy_perform(curl);
+
+	lua_newtable(L);
+
+	/* extract the normal headers from the first request */
+	while ((h = curl_easy_nextheader(curl, CURLH_HEADER | CURLH_TRAILER, request, prev)))
+	{
+		lua_pushstring(L, h->value);
+		lua_setfield(L, -2, h->name);
+		prev = h;
+	}
+
+	return 1;
+}
+
 /*
 	Registration phase starts
 */
@@ -739,6 +765,7 @@ const struct luaL_Reg libcurl[] = {
 	{"curl_getdate", l_curl_getdate},
 	{"curl_easy_escape", l_curl_easy_escape},
 	{"curl_easy_unescape", l_curl_easy_unescape},
+	{"curl_easy_header", l_curl_easy_header},
 	{"libc_free", l_libc_free},
 	{"libc_fclose", l_libc_fclose},
 	{"liblua_lua_close", l_liblua_lua_close},
