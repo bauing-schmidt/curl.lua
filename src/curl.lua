@@ -102,7 +102,7 @@ function curl.curl_easy_httpheader_setopt_getinfo (tbl)
 
 		curl.curl_slist_free_all(headers)	-- release the memory for headers.
 
-		headers = curl.curl_easy_header (cu, response_headers.request or 0)
+		local post_headers = curl.curl_easy_header (cu, response_headers.request or 0)
 
 		if type(returns.writefunction) == 'function' then
 			local code, chunk_ptr = returns.writefunction()
@@ -144,7 +144,7 @@ function curl.curl_easy_httpheader_setopt_getinfo (tbl)
 
 		curl.curl_easy_reset (cu)	-- reset the session handler because we have new params here.
 		
-		return returns, getinfos, headers
+		return returns, getinfos, post_headers
 	end
 end
 
