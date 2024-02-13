@@ -705,7 +705,7 @@ int l_curl_easy_header(lua_State *L)
 
 	struct curl_header *prev = NULL;
 	struct curl_header *h;
-	curl_easy_setopt(curl, CURLOPT_URL, "https://example.com");
+	
 	curl_easy_perform(curl);
 
 	lua_newtable(L);
