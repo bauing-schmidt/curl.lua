@@ -82,12 +82,11 @@ end
 function curl.curl_easy_httpheader_setopt_getinfo (tbl)
 
 	-- handle here a new table for headers from the server.
-	local headers_tbl, setopt_tbl, getinfo_tbl = 
-		tbl.httpheader, tbl.setopt, tbl.getinfo
-	
-	headers_tbl = headers_tbl or {}
-	setopt_tbl = setopt_tbl or {}
-	getinfo_tbl = getinfo_tbl or {}
+	local headers_tbl, setopt_tbl, getinfo_tbl, response_headers = 
+		tbl.httpheader or {}, 
+		tbl.setopt or {}, 
+		tbl.getinfo or {}, 
+		tbl.response_headers or {}
 
 	return function (cu)
 
@@ -103,7 +102,7 @@ function curl.curl_easy_httpheader_setopt_getinfo (tbl)
 
 		curl.curl_slist_free_all(headers)	-- release the memory for headers.
 
-		headers = curl.curl_easy_header (cu)
+		headers = curl.curl_easy_header (cu, response_headers.request or 0)
 
 		if type(returns.writefunction) == 'function' then
 			local code, chunk_ptr = returns.writefunction()
