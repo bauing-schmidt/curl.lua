@@ -335,6 +335,14 @@ int l_curl_easy_setopt_customrequest(lua_State *L)
 	return 1;
 }
 
+int l_curl_slist_empty(lua_State *L)
+{
+
+	lua_pushlightuserdata(L, NULL);
+
+	return 1;
+}
+
 int l_curl_slist_append(lua_State *L)
 {
 
@@ -369,15 +377,15 @@ int l_curl_easy_setopt_writefunction(lua_State *L)
 	CURL *curl = (CURL *)lua_touserdata(L, 1);
 
 	FILE *tmp = tmpfile();
-	CURLcode code = curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, &fwrite);
 
+	CURLcode code = curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, fwrite);
 	CURLcode ccode = curl_easy_setopt(curl, CURLOPT_WRITEDATA, tmp);
-	assert(ccode == CURLE_OK);
 
 	lua_pushinteger(L, code);
 	lua_pushlightuserdata(L, tmp);
+	lua_pushvalue(L, 2);
 
-	return 2;
+	return 3;
 }
 
 size_t read_callback(char *buffer, size_t size, size_t nitems, void *userdata)
@@ -547,22 +555,18 @@ int l_curl_easy_getopt_writedata(lua_State *L)
 	size_t sz = ftell(tmp);
 	rewind(tmp);
 
-	luaL_Buffer b;
+	char buffer[sz];
 
-	luaL_buffinit(L, &b);
-
-	for (int i = 0; i < sz; i++)
-	{
-		luaL_addchar(&b, fgetc(tmp));
-	}
-
-	luaL_pushresult(&b);
-
-	lua_pushinteger(L, sz);
+	size_t r = fread(buffer, 1, sz, tmp);
 
 	fclose(tmp);
 
-	return 2;
+	lua_checkstack(L, 3);
+	lua_pushboolean(L, r == sz);
+	lua_pushlstring(L, buffer, r);
+	lua_pushinteger(L, r);
+
+	return 3;
 }
 
 int l_curl_easy_getinfo_response_code(lua_State *L)
@@ -757,6 +761,7 @@ const struct luaL_Reg libcurl[] = {
 	{"curl_easy_getinfo_response_code", l_curl_easy_getinfo_response_code},
 	{"curl_easy_getopt_writedata", l_curl_easy_getopt_writedata},
 	{"curl_easy_perform", l_curl_easy_perform},
+	{"curl_slist_empty", l_curl_slist_empty},
 	{"curl_slist_append", l_curl_slist_append},
 	{"curl_slist_free_all", l_curl_slist_free_all},
 	{"curl_version", l_curl_version},
@@ -796,201 +801,298 @@ void enum_CURLcode(lua_State *L)
 	lua_newtable(L);
 
 	lua_pushinteger(L, CURLE_OK);
-	lua_setfield(L, -2, "CURLE_OK");
+	lua_setfield(L, -2, "OK");
+
 	lua_pushinteger(L, CURLE_UNSUPPORTED_PROTOCOL);
-	lua_setfield(L, -2, "CURLE_UNSUPPORTED_PROTOCOL");
+	lua_setfield(L, -2, "UNSUPPORTED_PROTOCOL");
+
 	lua_pushinteger(L, CURLE_FAILED_INIT);
-	lua_setfield(L, -2, "CURLE_FAILED_INIT");
+	lua_setfield(L, -2, "FAILED_INIT");
+
 	lua_pushinteger(L, CURLE_URL_MALFORMAT);
-	lua_setfield(L, -2, "CURLE_URL_MALFORMAT");
+	lua_setfield(L, -2, "URL_MALFORMAT");
+
 	lua_pushinteger(L, CURLE_NOT_BUILT_IN);
-	lua_setfield(L, -2, "CURLE_NOT_BUILT_IN");
+	lua_setfield(L, -2, "NOT_BUILT_IN");
+
 	lua_pushinteger(L, CURLE_COULDNT_RESOLVE_PROXY);
-	lua_setfield(L, -2, "CURLE_COULDNT_RESOLVE_PROXY");
+	lua_setfield(L, -2, "COULDNT_RESOLVE_PROXY");
+
 	lua_pushinteger(L, CURLE_COULDNT_RESOLVE_HOST);
-	lua_setfield(L, -2, "CURLE_COULDNT_RESOLVE_HOST");
+	lua_setfield(L, -2, "COULDNT_RESOLVE_HOST");
+
 	lua_pushinteger(L, CURLE_COULDNT_CONNECT);
-	lua_setfield(L, -2, "CURLE_COULDNT_CONNECT");
+	lua_setfield(L, -2, "COULDNT_CONNECT");
+
 	lua_pushinteger(L, CURLE_WEIRD_SERVER_REPLY);
-	lua_setfield(L, -2, "CURLE_WEIRD_SERVER_REPLY");
+	lua_setfield(L, -2, "WEIRD_SERVER_REPLY");
+
 	lua_pushinteger(L, CURLE_REMOTE_ACCESS_DENIED);
-	lua_setfield(L, -2, "CURLE_REMOTE_ACCESS_DENIED");
+	lua_setfield(L, -2, "REMOTE_ACCESS_DENIED");
+
 	lua_pushinteger(L, CURLE_FTP_ACCEPT_FAILED);
-	lua_setfield(L, -2, "CURLE_FTP_ACCEPT_FAILED");
+	lua_setfield(L, -2, "FTP_ACCEPT_FAILED");
+
 	lua_pushinteger(L, CURLE_FTP_WEIRD_PASS_REPLY);
-	lua_setfield(L, -2, "CURLE_FTP_WEIRD_PASS_REPLY");
+	lua_setfield(L, -2, "FTP_WEIRD_PASS_REPLY");
+
 	lua_pushinteger(L, CURLE_FTP_ACCEPT_TIMEOUT);
-	lua_setfield(L, -2, "CURLE_FTP_ACCEPT_TIMEOUT");
+	lua_setfield(L, -2, "FTP_ACCEPT_TIMEOUT");
+
 	lua_pushinteger(L, CURLE_FTP_WEIRD_PASV_REPLY);
-	lua_setfield(L, -2, "CURLE_FTP_WEIRD_PASV_REPLY");
+	lua_setfield(L, -2, "FTP_WEIRD_PASV_REPLY");
+
 	lua_pushinteger(L, CURLE_FTP_WEIRD_227_FORMAT);
-	lua_setfield(L, -2, "CURLE_FTP_WEIRD_227_FORMAT");
+	lua_setfield(L, -2, "FTP_WEIRD_227_FORMAT");
+
 	lua_pushinteger(L, CURLE_FTP_CANT_GET_HOST);
-	lua_setfield(L, -2, "CURLE_FTP_CANT_GET_HOST");
+	lua_setfield(L, -2, "FTP_CANT_GET_HOST");
+
 	lua_pushinteger(L, CURLE_HTTP2);
-	lua_setfield(L, -2, "CURLE_HTTP2");
+	lua_setfield(L, -2, "HTTP2");
+
 	lua_pushinteger(L, CURLE_FTP_COULDNT_SET_TYPE);
-	lua_setfield(L, -2, "CURLE_FTP_COULDNT_SET_TYPE");
+	lua_setfield(L, -2, "FTP_COULDNT_SET_TYPE");
+
 	lua_pushinteger(L, CURLE_PARTIAL_FILE);
-	lua_setfield(L, -2, "CURLE_PARTIAL_FILE");
+	lua_setfield(L, -2, "PARTIAL_FILE");
+
 	lua_pushinteger(L, CURLE_FTP_COULDNT_RETR_FILE);
-	lua_setfield(L, -2, "CURLE_FTP_COULDNT_RETR_FILE");
+	lua_setfield(L, -2, "FTP_COULDNT_RETR_FILE");
+
 	lua_pushinteger(L, CURLE_OBSOLETE20);
-	lua_setfield(L, -2, "CURLE_OBSOLETE20");
+	lua_setfield(L, -2, "OBSOLETE20");
+
 	lua_pushinteger(L, CURLE_QUOTE_ERROR);
-	lua_setfield(L, -2, "CURLE_QUOTE_ERROR");
+	lua_setfield(L, -2, "QUOTE_ERROR");
+
 	lua_pushinteger(L, CURLE_HTTP_RETURNED_ERROR);
-	lua_setfield(L, -2, "CURLE_HTTP_RETURNED_ERROR");
+	lua_setfield(L, -2, "HTTP_RETURNED_ERROR");
+
 	lua_pushinteger(L, CURLE_WRITE_ERROR);
-	lua_setfield(L, -2, "CURLE_WRITE_ERROR");
+	lua_setfield(L, -2, "WRITE_ERROR");
+
 	lua_pushinteger(L, CURLE_OBSOLETE24);
-	lua_setfield(L, -2, "CURLE_OBSOLETE24");
+	lua_setfield(L, -2, "OBSOLETE24");
+
 	lua_pushinteger(L, CURLE_UPLOAD_FAILED);
-	lua_setfield(L, -2, "CURLE_UPLOAD_FAILED");
+	lua_setfield(L, -2, "UPLOAD_FAILED");
+
 	lua_pushinteger(L, CURLE_READ_ERROR);
-	lua_setfield(L, -2, "CURLE_READ_ERROR");
+	lua_setfield(L, -2, "READ_ERROR");
+
 	lua_pushinteger(L, CURLE_OUT_OF_MEMORY);
-	lua_setfield(L, -2, "CURLE_OUT_OF_MEMORY");
+	lua_setfield(L, -2, "OUT_OF_MEMORY");
+
 	lua_pushinteger(L, CURLE_OPERATION_TIMEDOUT);
-	lua_setfield(L, -2, "CURLE_OPERATION_TIMEDOUT");
+	lua_setfield(L, -2, "OPERATION_TIMEDOUT");
+
 	lua_pushinteger(L, CURLE_OBSOLETE29);
-	lua_setfield(L, -2, "CURLE_OBSOLETE29");
+	lua_setfield(L, -2, "OBSOLETE29");
+
 	lua_pushinteger(L, CURLE_FTP_PORT_FAILED);
-	lua_setfield(L, -2, "CURLE_FTP_PORT_FAILED");
+	lua_setfield(L, -2, "FTP_PORT_FAILED");
+
 	lua_pushinteger(L, CURLE_FTP_COULDNT_USE_REST);
-	lua_setfield(L, -2, "CURLE_FTP_COULDNT_USE_REST");
+	lua_setfield(L, -2, "FTP_COULDNT_USE_REST");
+
 	lua_pushinteger(L, CURLE_OBSOLETE32);
-	lua_setfield(L, -2, "CURLE_OBSOLETE32");
+	lua_setfield(L, -2, "OBSOLETE32");
+
 	lua_pushinteger(L, CURLE_RANGE_ERROR);
-	lua_setfield(L, -2, "CURLE_RANGE_ERROR");
+	lua_setfield(L, -2, "RANGE_ERROR");
+
 	lua_pushinteger(L, CURLE_HTTP_POST_ERROR);
-	lua_setfield(L, -2, "CURLE_HTTP_POST_ERROR");
+	lua_setfield(L, -2, "HTTP_POST_ERROR");
+
 	lua_pushinteger(L, CURLE_SSL_CONNECT_ERROR);
-	lua_setfield(L, -2, "CURLE_SSL_CONNECT_ERROR");
+	lua_setfield(L, -2, "SSL_CONNECT_ERROR");
+
 	lua_pushinteger(L, CURLE_BAD_DOWNLOAD_RESUME);
-	lua_setfield(L, -2, "CURLE_BAD_DOWNLOAD_RESUME");
+	lua_setfield(L, -2, "BAD_DOWNLOAD_RESUME");
+
 	lua_pushinteger(L, CURLE_FILE_COULDNT_READ_FILE);
-	lua_setfield(L, -2, "CURLE_FILE_COULDNT_READ_FILE");
+	lua_setfield(L, -2, "FILE_COULDNT_READ_FILE");
+
 	lua_pushinteger(L, CURLE_LDAP_CANNOT_BIND);
-	lua_setfield(L, -2, "CURLE_LDAP_CANNOT_BIND");
+	lua_setfield(L, -2, "LDAP_CANNOT_BIND");
+
 	lua_pushinteger(L, CURLE_LDAP_SEARCH_FAILED);
-	lua_setfield(L, -2, "CURLE_LDAP_SEARCH_FAILED");
+	lua_setfield(L, -2, "LDAP_SEARCH_FAILED");
+
 	lua_pushinteger(L, CURLE_OBSOLETE40);
-	lua_setfield(L, -2, "CURLE_OBSOLETE40");
+	lua_setfield(L, -2, "OBSOLETE40");
+
 	lua_pushinteger(L, CURLE_FUNCTION_NOT_FOUND);
-	lua_setfield(L, -2, "CURLE_FUNCTION_NOT_FOUND");
+	lua_setfield(L, -2, "FUNCTION_NOT_FOUND");
+
 	lua_pushinteger(L, CURLE_ABORTED_BY_CALLBACK);
-	lua_setfield(L, -2, "CURLE_ABORTED_BY_CALLBACK");
+	lua_setfield(L, -2, "ABORTED_BY_CALLBACK");
+
 	lua_pushinteger(L, CURLE_BAD_FUNCTION_ARGUMENT);
-	lua_setfield(L, -2, "CURLE_BAD_FUNCTION_ARGUMENT");
+	lua_setfield(L, -2, "BAD_FUNCTION_ARGUMENT");
+
 	lua_pushinteger(L, CURLE_OBSOLETE44);
-	lua_setfield(L, -2, "CURLE_OBSOLETE44");
+	lua_setfield(L, -2, "OBSOLETE44");
+
 	lua_pushinteger(L, CURLE_INTERFACE_FAILED);
-	lua_setfield(L, -2, "CURLE_INTERFACE_FAILED");
+	lua_setfield(L, -2, "INTERFACE_FAILED");
+
 	lua_pushinteger(L, CURLE_OBSOLETE46);
-	lua_setfield(L, -2, "CURLE_OBSOLETE46");
+	lua_setfield(L, -2, "OBSOLETE46");
+
 	lua_pushinteger(L, CURLE_TOO_MANY_REDIRECTS);
-	lua_setfield(L, -2, "CURLE_TOO_MANY_REDIRECTS");
+	lua_setfield(L, -2, "TOO_MANY_REDIRECTS");
+
 	lua_pushinteger(L, CURLE_UNKNOWN_OPTION);
-	lua_setfield(L, -2, "CURLE_UNKNOWN_OPTION");
+	lua_setfield(L, -2, "UNKNOWN_OPTION");
+
 	lua_pushinteger(L, CURLE_SETOPT_OPTION_SYNTAX);
-	lua_setfield(L, -2, "CURLE_SETOPT_OPTION_SYNTAX");
+	lua_setfield(L, -2, "SETOPT_OPTION_SYNTAX");
+
 	lua_pushinteger(L, CURLE_OBSOLETE50);
-	lua_setfield(L, -2, "CURLE_OBSOLETE50");
+	lua_setfield(L, -2, "OBSOLETE50");
+
 	lua_pushinteger(L, CURLE_OBSOLETE51);
-	lua_setfield(L, -2, "CURLE_OBSOLETE51");
+	lua_setfield(L, -2, "OBSOLETE51");
+
 	lua_pushinteger(L, CURLE_GOT_NOTHING);
-	lua_setfield(L, -2, "CURLE_GOT_NOTHING");
+	lua_setfield(L, -2, "GOT_NOTHING");
+
 	lua_pushinteger(L, CURLE_SSL_ENGINE_NOTFOUND);
-	lua_setfield(L, -2, "CURLE_SSL_ENGINE_NOTFOUND");
+	lua_setfield(L, -2, "SSL_ENGINE_NOTFOUND");
+
 	lua_pushinteger(L, CURLE_SSL_ENGINE_SETFAILED);
-	lua_setfield(L, -2, "CURLE_SSL_ENGINE_SETFAILED");
+	lua_setfield(L, -2, "SSL_ENGINE_SETFAILED");
+
 	lua_pushinteger(L, CURLE_SEND_ERROR);
-	lua_setfield(L, -2, "CURLE_SEND_ERROR");
+	lua_setfield(L, -2, "SEND_ERROR");
+
 	lua_pushinteger(L, CURLE_RECV_ERROR);
-	lua_setfield(L, -2, "CURLE_RECV_ERROR");
+	lua_setfield(L, -2, "RECV_ERROR");
+
 	lua_pushinteger(L, CURLE_OBSOLETE57);
-	lua_setfield(L, -2, "CURLE_OBSOLETE57");
+	lua_setfield(L, -2, "OBSOLETE57");
+
 	lua_pushinteger(L, CURLE_SSL_CERTPROBLEM);
-	lua_setfield(L, -2, "CURLE_SSL_CERTPROBLEM");
+	lua_setfield(L, -2, "SSL_CERTPROBLEM");
+
 	lua_pushinteger(L, CURLE_SSL_CIPHER);
-	lua_setfield(L, -2, "CURLE_SSL_CIPHER");
+	lua_setfield(L, -2, "SSL_CIPHER");
+
 	lua_pushinteger(L, CURLE_PEER_FAILED_VERIFICATION);
-	lua_setfield(L, -2, "CURLE_PEER_FAILED_VERIFICATION");
+	lua_setfield(L, -2, "PEER_FAILED_VERIFICATION");
+
 	lua_pushinteger(L, CURLE_SSL_CACERT);
-	lua_setfield(L, -2, "CURLE_SSL_CACERT");
+	lua_setfield(L, -2, "SSL_CACERT");
+
 	lua_pushinteger(L, CURLE_BAD_CONTENT_ENCODING);
-	lua_setfield(L, -2, "CURLE_BAD_CONTENT_ENCODING");
+	lua_setfield(L, -2, "BAD_CONTENT_ENCODING");
+
 	lua_pushinteger(L, CURLE_FILESIZE_EXCEEDED);
-	lua_setfield(L, -2, "CURLE_FILESIZE_EXCEEDED");
+	lua_setfield(L, -2, "FILESIZE_EXCEEDED");
+
 	lua_pushinteger(L, CURLE_USE_SSL_FAILED);
-	lua_setfield(L, -2, "CURLE_USE_SSL_FAILED");
+	lua_setfield(L, -2, "USE_SSL_FAILED");
+
 	lua_pushinteger(L, CURLE_SEND_FAIL_REWIND);
-	lua_setfield(L, -2, "CURLE_SEND_FAIL_REWIND");
+	lua_setfield(L, -2, "SEND_FAIL_REWIND");
+
 	lua_pushinteger(L, CURLE_SSL_ENGINE_INITFAILED);
-	lua_setfield(L, -2, "CURLE_SSL_ENGINE_INITFAILED");
+	lua_setfield(L, -2, "SSL_ENGINE_INITFAILED");
+
 	lua_pushinteger(L, CURLE_LOGIN_DENIED);
-	lua_setfield(L, -2, "CURLE_LOGIN_DENIED");
+	lua_setfield(L, -2, "LOGIN_DENIED");
+
 	lua_pushinteger(L, CURLE_TFTP_NOTFOUND);
-	lua_setfield(L, -2, "CURLE_TFTP_NOTFOUND");
+	lua_setfield(L, -2, "TFTP_NOTFOUND");
+
 	lua_pushinteger(L, CURLE_TFTP_PERM);
-	lua_setfield(L, -2, "CURLE_TFTP_PERM");
+	lua_setfield(L, -2, "TFTP_PERM");
+
 	lua_pushinteger(L, CURLE_REMOTE_DISK_FULL);
-	lua_setfield(L, -2, "CURLE_REMOTE_DISK_FULL");
+	lua_setfield(L, -2, "REMOTE_DISK_FULL");
+
 	lua_pushinteger(L, CURLE_TFTP_ILLEGAL);
-	lua_setfield(L, -2, "CURLE_TFTP_ILLEGAL");
+	lua_setfield(L, -2, "TFTP_ILLEGAL");
+
 	lua_pushinteger(L, CURLE_TFTP_UNKNOWNID);
-	lua_setfield(L, -2, "CURLE_TFTP_UNKNOWNID");
+	lua_setfield(L, -2, "TFTP_UNKNOWNID");
+
 	lua_pushinteger(L, CURLE_REMOTE_FILE_EXISTS);
-	lua_setfield(L, -2, "CURLE_REMOTE_FILE_EXISTS");
+	lua_setfield(L, -2, "REMOTE_FILE_EXISTS");
+
 	lua_pushinteger(L, CURLE_TFTP_NOSUCHUSER);
-	lua_setfield(L, -2, "CURLE_TFTP_NOSUCHUSER");
+	lua_setfield(L, -2, "TFTP_NOSUCHUSER");
+
 	lua_pushinteger(L, CURLE_SSL_CACERT_BADFILE);
-	lua_setfield(L, -2, "CURLE_SSL_CACERT_BADFILE");
+	lua_setfield(L, -2, "SSL_CACERT_BADFILE");
+
 	lua_pushinteger(L, CURLE_REMOTE_FILE_NOT_FOUND);
-	lua_setfield(L, -2, "CURLE_REMOTE_FILE_NOT_FOUND");
+	lua_setfield(L, -2, "REMOTE_FILE_NOT_FOUND");
+
 	lua_pushinteger(L, CURLE_SSH);
-	lua_setfield(L, -2, "CURLE_SSH");
+	lua_setfield(L, -2, "SSH");
+
 	lua_pushinteger(L, CURLE_SSL_SHUTDOWN_FAILED);
-	lua_setfield(L, -2, "CURLE_SSL_SHUTDOWN_FAILED");
+	lua_setfield(L, -2, "SSL_SHUTDOWN_FAILED");
+
 	lua_pushinteger(L, CURLE_AGAIN);
-	lua_setfield(L, -2, "CURLE_AGAIN");
+	lua_setfield(L, -2, "AGAIN");
+
 	lua_pushinteger(L, CURLE_SSL_CRL_BADFILE);
-	lua_setfield(L, -2, "CURLE_SSL_CRL_BADFILE");
+	lua_setfield(L, -2, "SSL_CRL_BADFILE");
+
 	lua_pushinteger(L, CURLE_SSL_ISSUER_ERROR);
-	lua_setfield(L, -2, "CURLE_SSL_ISSUER_ERROR");
+	lua_setfield(L, -2, "SSL_ISSUER_ERROR");
+
 	lua_pushinteger(L, CURLE_FTP_PRET_FAILED);
-	lua_setfield(L, -2, "CURLE_FTP_PRET_FAILED");
+	lua_setfield(L, -2, "FTP_PRET_FAILED");
+
 	lua_pushinteger(L, CURLE_RTSP_CSEQ_ERROR);
-	lua_setfield(L, -2, "CURLE_RTSP_CSEQ_ERROR");
+	lua_setfield(L, -2, "RTSP_CSEQ_ERROR");
+
 	lua_pushinteger(L, CURLE_RTSP_SESSION_ERROR);
-	lua_setfield(L, -2, "CURLE_RTSP_SESSION_ERROR");
+	lua_setfield(L, -2, "RTSP_SESSION_ERROR");
+
 	lua_pushinteger(L, CURLE_FTP_BAD_FILE_LIST);
-	lua_setfield(L, -2, "CURLE_FTP_BAD_FILE_LIST");
+	lua_setfield(L, -2, "FTP_BAD_FILE_LIST");
+
 	lua_pushinteger(L, CURLE_CHUNK_FAILED);
-	lua_setfield(L, -2, "CURLE_CHUNK_FAILED");
+	lua_setfield(L, -2, "CHUNK_FAILED");
+
 	lua_pushinteger(L, CURLE_NO_CONNECTION_AVAILABLE);
-	lua_setfield(L, -2, "CURLE_NO_CONNECTION_AVAILABLE");
+	lua_setfield(L, -2, "NO_CONNECTION_AVAILABLE");
+
 	lua_pushinteger(L, CURLE_SSL_PINNEDPUBKEYNOTMATCH);
-	lua_setfield(L, -2, "CURLE_SSL_PINNEDPUBKEYNOTMATCH");
+	lua_setfield(L, -2, "SSL_PINNEDPUBKEYNOTMATCH");
+
 	lua_pushinteger(L, CURLE_SSL_INVALIDCERTSTATUS);
-	lua_setfield(L, -2, "CURLE_SSL_INVALIDCERTSTATUS");
+	lua_setfield(L, -2, "SSL_INVALIDCERTSTATUS");
+
 	lua_pushinteger(L, CURLE_HTTP2_STREAM);
-	lua_setfield(L, -2, "CURLE_HTTP2_STREAM");
+	lua_setfield(L, -2, "HTTP2_STREAM");
+
 	lua_pushinteger(L, CURLE_RECURSIVE_API_CALL);
-	lua_setfield(L, -2, "CURLE_RECURSIVE_API_CALL");
+	lua_setfield(L, -2, "RECURSIVE_API_CALL");
+
 	lua_pushinteger(L, CURLE_AUTH_ERROR);
-	lua_setfield(L, -2, "CURLE_AUTH_ERROR");
+	lua_setfield(L, -2, "AUTH_ERROR");
+
 	lua_pushinteger(L, CURLE_HTTP3);
-	lua_setfield(L, -2, "CURLE_HTTP3");
+	lua_setfield(L, -2, "HTTP3");
+
 	lua_pushinteger(L, CURLE_QUIC_CONNECT_ERROR);
-	lua_setfield(L, -2, "CURLE_QUIC_CONNECT_ERROR");
+	lua_setfield(L, -2, "QUIC_CONNECT_ERROR");
+
 	lua_pushinteger(L, CURLE_PROXY);
-	lua_setfield(L, -2, "CURLE_PROXY");
+	lua_setfield(L, -2, "PROXY");
+
 	lua_pushinteger(L, CURLE_SSL_CLIENTCERT);
-	lua_setfield(L, -2, "CURLE_SSL_CLIENTCERT");
+	lua_setfield(L, -2, "SSL_CLIENTCERT");
+
 	lua_pushinteger(L, CURL_LAST);
-	lua_setfield(L, -2, "CURL_LAST");
+	lua_setfield(L, -2, "LAST");
 
 	lua_setfield(L, -2, "CURLcode");
 }
